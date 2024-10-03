@@ -2,6 +2,7 @@ from tkinter import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigureCanvas
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 # Constants for colour
 
@@ -165,6 +166,11 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         newY = float(newY)
         if mode == 1: # If the mode is 1 (1 / x), set the new x value as 1 / x
             newX = 1 / float(newX)
+        elif mode == 2:
+            newY = math.log(newY)
+        elif mode == 3:
+            radians = newX * ( math.pi / 180.0 )
+            newX = math.cos(radians)
     except:
         return ""
     
@@ -189,6 +195,10 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         
         if xLabel == "1 / Length (1 / m)": # Checks to see if mode 1 is applicable
             mode = 1
+        elif yLabel == "ln(V)":
+            mode = 2
+        elif xLabel == "cos(θ)":
+            mode = 3
         
         entryButton.config(bg = lightRed) # Changes the button colour to red, indicating that pressing it will remove the data entry
         x = np.array([newX]) # Replaces the x and y arrays with the new entry, since there is only one entry
@@ -213,6 +223,10 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         
         if xLabel == "1 / Length (1 / m)": # Checks to see if mode 1 is applicable
             mode = 1
+        elif yLabel == "ln(V)":
+            mode = 2
+        elif xLabel == "cos(θ)":
+            mode = 3
         
         # Does the exact same as previous condition, except appends the new values to the x and y arrays
         
@@ -263,6 +277,8 @@ def openRP1(mainFrame):
     
     mode = 1 # Mode is 1, meaning x will be 1 / x instead. If nothing special happens to entries, keep the mode as 0
     
+    # PAST THIS NOTHING CHANGES ---------------------------------------------------------------------------------------
+    
     destroyFrames(mainFrame) # Destroys all other frames
     
     RPFrame = Frame(master = mainFrame, width = 880, height = 720, bd = 2, relief = "groove")
@@ -292,38 +308,320 @@ def openRP1(mainFrame):
     RPFrame.pack()
     
 def openRP2(mainFrame):
-    print("")
+    xAxis = "Distance from slit to screen (m)"
+    yAxis = "Distance between each fringe (m)"
+    
+    xEntryTitle = "Slit screen distance (m)"
+    yEntryTitle = "Fringe spacing (m)"
+    
+    originalEquation = "w = λD/s"
+    linearisedEquation = "w = (λ/s)D"
+    
+    mode = 0
+    
+    destroyFrames(mainFrame)
+    
+    RPFrame = Frame(master = mainFrame, width = 880, height = 720, bd = 2, relief = "groove")
+    
+    figure, axes, canvas = createGraph(RPFrame, xAxis, yAxis)
+    
+    rpInfoFrame = Frame(master = RPFrame, width = 602, height = 178, bg = darkGrey, bd = 2, relief = "groove")
+    rpInfoFrame.place(relx = 1, rely = 1, x = -10, y = -10, anchor = SE)
+    
+    gradientString = StringVar(master = rpInfoFrame, value = f"Gradient: Unavailable")
+    interceptString = StringVar(master = rpInfoFrame, value = f"y-intercept: Unavailable")
+    
+    originalEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Original: {originalEquation}", font = ('Arial', 14))
+    linearisedEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Linearised: {linearisedEquation}", font = ('Arial', 14))
+    gradientLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = gradientString, font = ('Arial', 14))
+    interceptLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = interceptString, font = ('Arial', 14))
+    
+    originalEquation.grid(row = 0, column = 0)
+    linearisedEquation.grid(row = 0, column = 1)
+    gradientLabel.grid(row = 1, column = 0)
+    interceptLabel.grid(row = 1, column = 1)
+    
+    createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString)
+    
+    RPFrame.pack()
 
 def openRP3(mainFrame):
-    print("")
+    xAxis = "Time (s)"
+    yAxis = "Height x 2 / Time (m/s)"
+    
+    xEntryTitle = "Time (s)"
+    yEntryTitle = "2h/t (m/s)"
+    
+    originalEquation = "s = ut + 1/2(at)²"
+    linearisedEquation = "2h/t = gt + 2u"
+    
+    mode = 0
+    
+    destroyFrames(mainFrame)
+    
+    RPFrame = Frame(master = mainFrame, width = 880, height = 720, bd = 2, relief = "groove")
+    
+    figure, axes, canvas = createGraph(RPFrame, xAxis, yAxis)
+    
+    rpInfoFrame = Frame(master = RPFrame, width = 602, height = 178, bg = darkGrey, bd = 2, relief = "groove")
+    rpInfoFrame.place(relx = 1, rely = 1, x = -10, y = -10, anchor = SE)
+    
+    gradientString = StringVar(master = rpInfoFrame, value = f"Gradient: Unavailable")
+    interceptString = StringVar(master = rpInfoFrame, value = f"y-intercept: Unavailable")
+    
+    originalEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Original: {originalEquation}", font = ('Arial', 14))
+    linearisedEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Linearised: {linearisedEquation}", font = ('Arial', 14))
+    gradientLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = gradientString, font = ('Arial', 14))
+    interceptLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = interceptString, font = ('Arial', 14))
+    
+    originalEquation.grid(row = 0, column = 0)
+    linearisedEquation.grid(row = 0, column = 1)
+    gradientLabel.grid(row = 1, column = 0)
+    interceptLabel.grid(row = 1, column = 1)
+    
+    createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString)
+    
+    RPFrame.pack()
+
 
 def openRP4(mainFrame):
-    print("")
+    xAxis = "Change in length (m)"
+    yAxis = "Force (N)"
+    
+    xEntryTitle = "ΔL (m)"
+    yEntryTitle = "Force (N)"
+    
+    originalEquation = "Young Modulus = Tensile stress / Tensile strain"
+    linearisedEquation = "F = (Young Modulus x A / L)ΔL"
+    
+    mode = 0
+    
+    destroyFrames(mainFrame)
+    
+    RPFrame = Frame(master = mainFrame, width = 880, height = 720, bd = 2, relief = "groove")
+    
+    figure, axes, canvas = createGraph(RPFrame, xAxis, yAxis)
+    
+    rpInfoFrame = Frame(master = RPFrame, width = 602, height = 178, bg = darkGrey, bd = 2, relief = "groove")
+    rpInfoFrame.place(relx = 1, rely = 1, x = -10, y = -10, anchor = SE)
+    
+    gradientString = StringVar(master = rpInfoFrame, value = f"Gradient: Unavailable")
+    interceptString = StringVar(master = rpInfoFrame, value = f"y-intercept: Unavailable")
+    
+    originalEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Original: {originalEquation}", font = ('Arial', 14))
+    linearisedEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Linearised: {linearisedEquation}", font = ('Arial', 14))
+    gradientLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = gradientString, font = ('Arial', 14))
+    interceptLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = interceptString, font = ('Arial', 14))
+    
+    originalEquation.grid(row = 0, column = 0)
+    linearisedEquation.grid(row = 0, column = 1)
+    gradientLabel.grid(row = 1, column = 0)
+    interceptLabel.grid(row = 1, column = 1)
+    
+    createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString)
+    
+    RPFrame.pack()
+
 
 def openRP5(mainFrame):
-    print("")
+    xAxis = "Length of wire (m)"
+    yAxis = "Resistance (Ω)"
+    
+    xEntryTitle = "Length (m)"
+    yEntryTitle = "Resistance (Ω)"
+    
+    originalEquation = "ρ = RA/L"
+    linearisedEquation = "R = (ρ/A)L"
+    
+    mode = 0
+    
+    destroyFrames(mainFrame)
+    
+    RPFrame = Frame(master = mainFrame, width = 880, height = 720, bd = 2, relief = "groove")
+    
+    figure, axes, canvas = createGraph(RPFrame, xAxis, yAxis)
+    
+    rpInfoFrame = Frame(master = RPFrame, width = 602, height = 178, bg = darkGrey, bd = 2, relief = "groove")
+    rpInfoFrame.place(relx = 1, rely = 1, x = -10, y = -10, anchor = SE)
+    
+    gradientString = StringVar(master = rpInfoFrame, value = f"Gradient: Unavailable")
+    interceptString = StringVar(master = rpInfoFrame, value = f"y-intercept: Unavailable")
+    
+    originalEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Original: {originalEquation}", font = ('Arial', 14))
+    linearisedEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Linearised: {linearisedEquation}", font = ('Arial', 14))
+    gradientLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = gradientString, font = ('Arial', 14))
+    interceptLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = interceptString, font = ('Arial', 14))
+    
+    originalEquation.grid(row = 0, column = 0)
+    linearisedEquation.grid(row = 0, column = 1)
+    gradientLabel.grid(row = 1, column = 0)
+    interceptLabel.grid(row = 1, column = 1)
+    
+    createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString)
+    
+    RPFrame.pack()
 
 def openRP6(mainFrame):
-    print("")
+    xAxis = "Current (A)"
+    yAxis = "Voltage (V)"
+    
+    xEntryTitle = "Current (A)"
+    yEntryTitle = "Voltage (V)"
+    
+    originalEquation = "E = I(R + r)"
+    linearisedEquation = "V = (-r)I + E"
+    
+    mode = 0
+    
+    destroyFrames(mainFrame)
+    
+    RPFrame = Frame(master = mainFrame, width = 880, height = 720, bd = 2, relief = "groove")
+    
+    figure, axes, canvas = createGraph(RPFrame, xAxis, yAxis)
+    
+    rpInfoFrame = Frame(master = RPFrame, width = 602, height = 178, bg = darkGrey, bd = 2, relief = "groove")
+    rpInfoFrame.place(relx = 1, rely = 1, x = -10, y = -10, anchor = SE)
+    
+    gradientString = StringVar(master = rpInfoFrame, value = f"Gradient: Unavailable")
+    interceptString = StringVar(master = rpInfoFrame, value = f"y-intercept: Unavailable")
+    
+    originalEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Original: {originalEquation}", font = ('Arial', 14))
+    linearisedEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Linearised: {linearisedEquation}", font = ('Arial', 14))
+    gradientLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = gradientString, font = ('Arial', 14))
+    interceptLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = interceptString, font = ('Arial', 14))
+    
+    originalEquation.grid(row = 0, column = 0)
+    linearisedEquation.grid(row = 0, column = 1)
+    gradientLabel.grid(row = 1, column = 0)
+    interceptLabel.grid(row = 1, column = 1)
+    
+    createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString)
+    
+    RPFrame.pack()
 
 def openRP7(mainFrame):
-    print("")
+    print("COME BACK TO THIS")
 
 def openRP8(mainFrame):
-    print("")
+    print("COME BACK TO THIS")
 
 def openRP9(mainFrame):
-    print("")
+    xAxis = "Time (s)"
+    yAxis = "ln(V)"
+    
+    xEntryTitle = "Time (s)"
+    yEntryTitle = "Voltage (V)"
+    
+    originalEquation = "V = V₀e^(-t/RC)"
+    linearisedEquation = "ln(V) = (-1/RC)t + ln(V₀)"
+    
+    mode = 2
+    
+    destroyFrames(mainFrame)
+    
+    RPFrame = Frame(master = mainFrame, width = 880, height = 720, bd = 2, relief = "groove")
+    
+    figure, axes, canvas = createGraph(RPFrame, xAxis, yAxis)
+    
+    rpInfoFrame = Frame(master = RPFrame, width = 602, height = 178, bg = darkGrey, bd = 2, relief = "groove")
+    rpInfoFrame.place(relx = 1, rely = 1, x = -10, y = -10, anchor = SE)
+    
+    gradientString = StringVar(master = rpInfoFrame, value = f"Gradient: Unavailable")
+    interceptString = StringVar(master = rpInfoFrame, value = f"y-intercept: Unavailable")
+    
+    originalEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Original: {originalEquation}", font = ('Arial', 14))
+    linearisedEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Linearised: {linearisedEquation}", font = ('Arial', 14))
+    gradientLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = gradientString, font = ('Arial', 14))
+    interceptLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = interceptString, font = ('Arial', 14))
+    
+    originalEquation.grid(row = 0, column = 0)
+    linearisedEquation.grid(row = 0, column = 1)
+    gradientLabel.grid(row = 1, column = 0)
+    interceptLabel.grid(row = 1, column = 1)
+    
+    createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString)
+    
+    RPFrame.pack()
 
 def openRP10(mainFrame):
-    print("")
+    xAxis = "Current (A)"
+    yAxis = "Mass (kg)"
+    
+    xEntryTitle = "Current (A)"
+    yEntryTitle = "Mass (kg)"
+    
+    originalEquation = "F = nBIL"
+    linearisedEquation = "m = (nBL/g)I"
+    
+    mode = 0
+    
+    destroyFrames(mainFrame)
+    
+    RPFrame = Frame(master = mainFrame, width = 880, height = 720, bd = 2, relief = "groove")
+    
+    figure, axes, canvas = createGraph(RPFrame, xAxis, yAxis)
+    
+    rpInfoFrame = Frame(master = RPFrame, width = 602, height = 178, bg = darkGrey, bd = 2, relief = "groove")
+    rpInfoFrame.place(relx = 1, rely = 1, x = -10, y = -10, anchor = SE)
+    
+    gradientString = StringVar(master = rpInfoFrame, value = f"Gradient: Unavailable")
+    interceptString = StringVar(master = rpInfoFrame, value = f"y-intercept: Unavailable")
+    
+    originalEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Original: {originalEquation}", font = ('Arial', 14))
+    linearisedEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Linearised: {linearisedEquation}", font = ('Arial', 14))
+    gradientLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = gradientString, font = ('Arial', 14))
+    interceptLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = interceptString, font = ('Arial', 14))
+    
+    originalEquation.grid(row = 0, column = 0)
+    linearisedEquation.grid(row = 0, column = 1)
+    gradientLabel.grid(row = 1, column = 0)
+    interceptLabel.grid(row = 1, column = 1)
+    
+    createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString)
+    
+    RPFrame.pack()
+
 
 def openRP11(mainFrame):
-    print("")
+    xAxis = "cos(θ)"
+    yAxis = "ε₀ (V)"
+    
+    xEntryTitle = "Angle (θ)"
+    yEntryTitle = "Peak emf (V)"
+    
+    originalEquation = "ε = -B₀ANωsin(ωt)cos(θ)"
+    linearisedEquation = "ε₀ = B₀ANωcos(θ)"
+    
+    mode = 3
+    
+    destroyFrames(mainFrame)
+    
+    RPFrame = Frame(master = mainFrame, width = 880, height = 720, bd = 2, relief = "groove")
+    
+    figure, axes, canvas = createGraph(RPFrame, xAxis, yAxis)
+    
+    rpInfoFrame = Frame(master = RPFrame, width = 602, height = 178, bg = darkGrey, bd = 2, relief = "groove")
+    rpInfoFrame.place(relx = 1, rely = 1, x = -10, y = -10, anchor = SE)
+    
+    gradientString = StringVar(master = rpInfoFrame, value = f"Gradient: Unavailable")
+    interceptString = StringVar(master = rpInfoFrame, value = f"y-intercept: Unavailable")
+    
+    originalEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Original: {originalEquation}", font = ('Arial', 14))
+    linearisedEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Linearised: {linearisedEquation}", font = ('Arial', 14))
+    gradientLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = gradientString, font = ('Arial', 14))
+    interceptLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = interceptString, font = ('Arial', 14))
+    
+    originalEquation.grid(row = 0, column = 0)
+    linearisedEquation.grid(row = 0, column = 1)
+    gradientLabel.grid(row = 1, column = 0)
+    interceptLabel.grid(row = 1, column = 1)
+    
+    createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString)
+    
+    RPFrame.pack()
 
 def openRP12(mainFrame):
     print("")
 
 root = Tk()
 main()
-
