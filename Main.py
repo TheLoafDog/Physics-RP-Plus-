@@ -10,8 +10,9 @@ import ast
 darkGrey = '#ababab'
 lightGreen = '#bfffd7'
 lightRed = '#ffbfbf'
-darkRed = '#4a0500'
-darkGreen = '#013607'
+darkRed = '#b50f00'
+darkGreen = '#027500'
+darkBlue = '#005969'
 
 # List of RPs for side menu buttons
 
@@ -145,8 +146,8 @@ def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, 
     
     # Creates the labels that tell the user what to input
     
-    xTitle = Label(master = dataFrame, width = 12, height = 4, bg = darkGrey, text = xEntryTitle, font = ('Arial Bold', 8), justify = CENTER)
-    yTitle = Label(master = dataFrame, width = 12, height = 4, bg = darkGrey, text = yEntryTitle, font = ('Arial Bold', 8), justify = CENTER)
+    xTitle = Label(master = dataFrame, width = 12, height = 3, bg = darkGrey, text = xEntryTitle, font = ('Arial Bold', 8), justify = CENTER, wraplength = 100)
+    yTitle = Label(master = dataFrame, width = 12, height = 3, bg = darkGrey, text = yEntryTitle, font = ('Arial Bold', 8), justify = CENTER, wraplength = 100)
     
     xTitle.place(x = 10, y = 0)
     yTitle.place(x = 110, y = 0)
@@ -264,14 +265,14 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
     
     axes.scatter(x, y, marker = "+", color = "black", s = 100) # Displays the new updated graph
     
-    gradientString.set("Gradient:\nUnavailable") # Sets the string variables to unavailable, changes if they are available
-    interceptString.set("y-intercept:\nUnavailable")
+    gradientString.set("Unavailable") # Sets the string variables to unavailable, changes if they are available
+    interceptString.set("Unavailable")
     
     if len(x) > 1 and len(y) > 1: # Draws gradient and changes string variables if applicable
         gradient, intercept = np.polyfit(x, y, 1)
         axes.plot(x, gradient * x + intercept, linestyle = "--", linewidth = 1)
-        gradientString.set(f"Gradient:\n{str(gradient)}")
-        interceptString.set(f"y-intercept:\n{str(intercept)}")
+        gradientString.set(f"{str(gradient)}")
+        interceptString.set(f"{str(intercept)}")
         
     
     if len(x) == 1 and x[0] == 0: # If there is no entry, set the x and y limits to 10 as placeholder
@@ -283,7 +284,7 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
     
     canvas.draw() # Draw the canvas
     
-def openRP(mainFrame, xAxis, yAxis, xEntryTitle, yEntryTitle, originalEquation, linearisedEquation, mode):
+def openRP(mainFrame, yAxis, xAxis, xEntryTitle, yEntryTitle, originalEquation, linearisedEquation, mode):
     destroyFrames(mainFrame)
     
     RPFrame = Frame(master = mainFrame, width = 880, height = 720, bd = 2, relief = "groove")
@@ -293,18 +294,32 @@ def openRP(mainFrame, xAxis, yAxis, xEntryTitle, yEntryTitle, originalEquation, 
     rpInfoFrame = Frame(master = RPFrame, width = 602, height = 178, bg = darkGrey, bd = 2, relief = "groove")
     rpInfoFrame.place(relx = 1, rely = 1, x = -10, y = -10, anchor = SE)
     
-    gradientString = StringVar(master = rpInfoFrame, value = f"Gradient:\nUnavailable")
-    interceptString = StringVar(master = rpInfoFrame, value = f"y-intercept:\nUnavailable")
+    gradientString = StringVar(master = rpInfoFrame, value = "Unavailable")
+    interceptString = StringVar(master = rpInfoFrame, value = "Unavailable")
     
-    originalEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Original:\n{originalEquation}", font = ('Arial', 14))
-    linearisedEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Linearised:\n{linearisedEquation}", font = ('Arial', 14))
-    gradientLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = gradientString, font = ('Arial', 14))
-    interceptLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = interceptString, font = ('Arial', 14))
+    originalEquationTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "Original:", font = ('Arial Bold', 13), fg = darkRed)
+    originalEquation = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = originalEquation, font = ('Arial', 14))
     
-    originalEquation.grid(row = 0, column = 0)
-    linearisedEquation.grid(row = 0, column = 1)
-    gradientLabel.grid(row = 1, column = 0)
-    interceptLabel.grid(row = 1, column = 1)
+    linearisedEquationTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "Linearised:", font = ('Arial Bold', 13), fg = darkGreen)
+    linearisedEquation = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = linearisedEquation, font = ('Arial', 14))
+    
+    gradientTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "Gradient:", font = ('Arial Bold', 13), fg = darkBlue)
+    gradientLabel = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, textvariable = gradientString, font = ('Arial', 14))
+    
+    interceptTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "y-intercept:", font = ('Arial Bold', 13), fg = darkBlue)
+    interceptLabel = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, textvariable = interceptString, font = ('Arial', 14))
+    
+    originalEquationTitle.grid(row = 0, column = 0)
+    linearisedEquationTitle.grid(row = 0, column = 1)
+    
+    originalEquation.grid(row = 1, column = 0)
+    linearisedEquation.grid(row = 1, column = 1)
+    
+    gradientTitle.grid(row = 2, column = 0)
+    interceptTitle.grid(row = 2, column = 1)
+    
+    gradientLabel.grid(row = 3, column = 0)
+    interceptLabel.grid(row = 3, column = 1)
     
     createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString)
     
