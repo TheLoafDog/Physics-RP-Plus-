@@ -263,16 +263,21 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         dataEntry.grid(row = rowIndex, column = 0, pady = 3)
         rowIndex += 1
     
+    sortIndices = np.argsort(x)
+    
+    x = x[sortIndices]
+    y = y[sortIndices]
+    
     axes.scatter(x, y, marker = "x", color = "black", s = 75) # Displays the new updated graph
     
-    gradientString.set("Unavailable") # Sets the string variables to unavailable, changes if they are available
+    gradientString.set("Best: Unavailable") # Sets the string variables to unavailable, changes if they are available
     interceptString.set("Unavailable")
     
     if len(x) > 1 and len(y) > 1: # Draws gradient and changes string variables if applicable
         gradient, intercept = np.polyfit(x, y, 1)
         axes.plot(x, gradient * x + intercept, linestyle = "--", linewidth = 1)
-        gradientString.set(f"{str(gradient)}")
-        interceptString.set(f"{str(intercept)}")
+        gradientString.set(f"Best: {str(round(gradient, 3))}")
+        interceptString.set(str(round(intercept, 3)))
         
     
     if len(x) == 1 and x[0] == 0: # If there is no entry, set the x and y limits to 10 as placeholder
@@ -284,10 +289,15 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
     
     canvas.draw() # Draw the canvas
 
-def calculateGradients(xUncertainty, yUncertainty, axes, canvas, xLabel, yLabel):
+def calculateGradients(xUncertainty, yUncertainty, axes, canvas, xLabel, yLabel, minGradientString, maxGradientString):
     
     global x
     global y
+    
+    sortIndices = np.argsort(x)
+    
+    x = x[sortIndices]
+    y = y[sortIndices]
     
     try:
         if len(xUncertainty) == 0 and len(yUncertainty) == 0:
@@ -319,14 +329,12 @@ def calculateGradients(xUncertainty, yUncertainty, axes, canvas, xLabel, yLabel)
     elif yUncertainty == 0:
         axes.errorbar(x, y, xerr = xUncertainty, capsize=5, ls = 'none')
     
-    #gradientString.set("Unavailable") # Sets the string variables to unavailable, changes if they are available
-    #interceptString.set("Unavailable")
+    minGradientString.set("Min: Unavailable")
+    maxGradientString.set("Max: Unavailable")
     
     if len(x) > 1 and len(y) > 1: # Draws gradient and changes string variables if applicable
         gradient, intercept = np.polyfit(x, y, 1)
         axes.plot(x, gradient * x + intercept, linestyle = "--", linewidth = 1)
-        #gradientString.set(f"{str(gradient)}")
-        #interceptString.set(f"{str(intercept)}")
         
         minX = np.copy(x)
         minY = np.copy(y)
@@ -347,6 +355,7 @@ def calculateGradients(xUncertainty, yUncertainty, axes, canvas, xLabel, yLabel)
         minIntercept = minYStart - minGradient * minXStart
         
         axes.plot(minX, minGradient * minX + minIntercept, linestyle = "--", linewidth = 1)
+        minGradientString.set(f"Min: {str(round(minGradient, 3))}")
         
         maxX = np.copy(x)
         maxY = np.copy(y)
@@ -367,6 +376,7 @@ def calculateGradients(xUncertainty, yUncertainty, axes, canvas, xLabel, yLabel)
         maxIntercept = maxYStart - maxGradient * maxXStart
         
         axes.plot(maxX, maxGradient * maxX + maxIntercept, linestyle = "--", linewidth = 1)
+        maxGradientString.set(f"Max: {str(round(maxGradient, 3))}")
     
     if len(x) == 1 and x[0] == 0: # If there is no entry, set the x and y limits to 10 as placeholder
         axes.set_xlim([0, 10])
@@ -387,20 +397,26 @@ def openRP(mainFrame, yAxis, xAxis, xEntryTitle, yEntryTitle, originalEquation, 
     rpInfoFrame = Frame(master = RPFrame, width = 602, height = 178, bg = darkGrey, bd = 2, relief = "groove")
     rpInfoFrame.place(relx = 1, rely = 1, x = -10, y = -10, anchor = SE)
     
-    gradientString = StringVar(master = rpInfoFrame, value = "Unavailable")
+    bestGradientString = StringVar(master = rpInfoFrame, value = "Best: Unavailable")
+    minGradientString = StringVar(master = rpInfoFrame, value = "Min: Unavailable")
+    maxGradientString = StringVar(master = rpInfoFrame, value = "Max: Unavailable")
     interceptString = StringVar(master = rpInfoFrame, value = "Unavailable")
     
     originalEquationTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "Original:", font = ('Arial Bold', 13), fg = darkRed)
-    originalEquation = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = originalEquation, font = ('Arial', 14))
+    originalEquation = Label(master = rpInfoFrame, width = 27, height = 1, bg = darkGrey, bd = 0, text = originalEquation, font = ('Arial', 14))
     
     linearisedEquationTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "Linearised:", font = ('Arial Bold', 13), fg = darkGreen)
-    linearisedEquation = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = linearisedEquation, font = ('Arial', 14))
+    linearisedEquation = Label(master = rpInfoFrame, width = 27, height = 1, bg = darkGrey, bd = 0, text = linearisedEquation, font = ('Arial', 14))
     
-    gradientTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "Gradient:", font = ('Arial Bold', 13), fg = darkBlue)
-    gradientLabel = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, textvariable = gradientString, font = ('Arial', 14))
+    gradientTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "Gradients:", font = ('Arial Bold', 13), fg = darkBlue)
+    gradientFrame = Frame(master = rpInfoFrame, width = 27, height = 3, bg = darkGrey, bd = 0)
+    
+    bestGradientLabel = Label(master = gradientFrame, width = 27, height = 1, bg = darkGrey, bd = 0, textvariable = bestGradientString, font = ('Arial', 12))
+    minGradientLabel = Label(master = gradientFrame, width = 27, height = 1, bg = darkGrey, bd = 0, textvariable = minGradientString, font = ('Arial', 12))
+    maxGradientLabel = Label(master = gradientFrame, width = 27, height = 1, bg = darkGrey, bd = 0, textvariable = maxGradientString, font = ('Arial', 12))
     
     interceptTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "y-intercept:", font = ('Arial Bold', 13), fg = darkBlue)
-    interceptLabel = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, textvariable = interceptString, font = ('Arial', 14))
+    interceptLabel = Label(master = rpInfoFrame, width = 27, height = 3, bg = darkGrey, bd = 0, textvariable = interceptString, font = ('Arial', 14))
     
     originalEquationTitle.grid(row = 0, column = 0)
     linearisedEquationTitle.grid(row = 0, column = 1)
@@ -411,10 +427,15 @@ def openRP(mainFrame, yAxis, xAxis, xEntryTitle, yEntryTitle, originalEquation, 
     gradientTitle.grid(row = 2, column = 0)
     interceptTitle.grid(row = 2, column = 1)
     
-    gradientLabel.grid(row = 3, column = 0)
+    gradientFrame.grid(row = 3, column = 0)
     interceptLabel.grid(row = 3, column = 1)
     
-    createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString)
+    bestGradientLabel.grid(row = 0, column = 0)
+    minGradientLabel.grid(row = 1, column = 0)
+    maxGradientLabel.grid(row = 2, column = 0)
+    
+    
+    createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, bestGradientString, interceptString)
     
     extraFrame = Frame(master = RPFrame, width = 240, height = 177, bg = darkGrey, bd = 2, relief = "groove")
     extraFrame.place(rely = 1, relx = 0, y = -10, x = 10, anchor = SW)
@@ -440,7 +461,7 @@ def openRP(mainFrame, yAxis, xAxis, xEntryTitle, yEntryTitle, originalEquation, 
     yUncertaintyEntry = Entry(master = yUncertaintyFrame)
     yUncertaintyEntry.grid(row = 0, column = 1)
     
-    calculateGradientButton = Button(master = extraFrame, width = 14, height = 1, text = "Calculate gradients", bd = 2, relief = "raised", command = lambda: calculateGradients(xUncertaintyEntry.get(), yUncertaintyEntry.get(), axes, canvas, xAxis, yAxis))
+    calculateGradientButton = Button(master = extraFrame, width = 14, height = 1, text = "Calculate gradients", bd = 2, relief = "raised", command = lambda: calculateGradients(xUncertaintyEntry.get(), yUncertaintyEntry.get(), axes, canvas, xAxis, yAxis, minGradientString, maxGradientString))
     calculateGradientButton.place(relx = 0.5, rely = 0, y = 100, anchor = N)
     
     RPFrame.pack()
