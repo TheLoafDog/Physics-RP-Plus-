@@ -434,7 +434,6 @@ def openRP(mainFrame, yAxis, xAxis, xEntryTitle, yEntryTitle, originalEquation, 
     minGradientLabel.grid(row = 1, column = 0)
     maxGradientLabel.grid(row = 2, column = 0)
     
-    
     createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, bestGradientString, interceptString)
     
     extraFrame = Frame(master = RPFrame, width = 240, height = 177, bg = darkGrey, bd = 2, relief = "groove")
