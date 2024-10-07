@@ -1,3 +1,8 @@
+# make the graph holder interactive correctly so the border does not incrase but the graph itself as a whole
+# the data entry frame does not expand as well
+# (optional) make the side bar interactive as well
+
+
 from tkinter import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigureCanvas
 import matplotlib.pyplot as plt
@@ -10,8 +15,9 @@ import ast
 darkGrey = '#ababab'
 lightGreen = '#bfffd7'
 lightRed = '#ffbfbf'
-darkRed = '#4a0500'
-darkGreen = '#013607'
+darkRed = '#b50f00'
+darkGreen = '#027500'
+darkBlue = '#005969'
 
 # List of RPs for side menu buttons
 
@@ -105,7 +111,7 @@ def createGraph(currentFrame, xLabel, yLabel): # Subroutine called when new requ
     # Creates a frame to hold the graph
     
     graphHolder = Frame(master = currentFrame, width = 550, height = 500, bg = 'black')
-    graphHolder.place(relx = 1, rely = 0, x = -10, y = 10, anchor = NE)
+    graphHolder.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
     
     # Creates the graph UI
     
@@ -145,8 +151,8 @@ def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, 
     
     # Creates the labels that tell the user what to input
     
-    xTitle = Label(master = dataFrame, width = 12, height = 4, bg = darkGrey, text = xEntryTitle, font = ('Arial Bold', 8), justify = CENTER)
-    yTitle = Label(master = dataFrame, width = 12, height = 4, bg = darkGrey, text = yEntryTitle, font = ('Arial Bold', 8), justify = CENTER)
+    xTitle = Label(master = dataFrame, width = 12, height = 3, bg = darkGrey, text = xEntryTitle, font = ('Arial Bold', 8), justify = CENTER, wraplength = 100)
+    yTitle = Label(master = dataFrame, width = 12, height = 3, bg = darkGrey, text = yEntryTitle, font = ('Arial Bold', 8), justify = CENTER, wraplength = 100)
     
     xTitle.place(x = 10, y = 0)
     yTitle.place(x = 110, y = 0)
@@ -154,7 +160,7 @@ def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, 
     # Creates the frame where the data entry frames will be gridded into
     
     dataEntryFrame = Frame(master = dataFrame, width = 216, height = 430, bg = darkGrey)
-    dataEntryFrame.place(x = 10, y = 40)
+    dataEntryFrame.grid(row=0, column=0, padx=10, pady=40, sticky="nsew")
     
     # Creates the data entry frame
     
@@ -262,16 +268,21 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         dataEntry.grid(row = rowIndex, column = 0, pady = 3)
         rowIndex += 1
     
-    axes.scatter(x, y, marker = "+", color = "black", s = 100) # Displays the new updated graph
+    sortIndices = np.argsort(x)
     
-    gradientString.set("Gradient:\nUnavailable") # Sets the string variables to unavailable, changes if they are available
-    interceptString.set("y-intercept:\nUnavailable")
+    x = x[sortIndices]
+    y = y[sortIndices]
+    
+    axes.scatter(x, y, marker = "x", color = "black", s = 75) # Displays the new updated graph
+    
+    gradientString.set("Best: Unavailable") # Sets the string variables to unavailable, changes if they are available
+    interceptString.set("Unavailable")
     
     if len(x) > 1 and len(y) > 1: # Draws gradient and changes string variables if applicable
         gradient, intercept = np.polyfit(x, y, 1)
         axes.plot(x, gradient * x + intercept, linestyle = "--", linewidth = 1)
-        gradientString.set(f"Gradient:\n{str(gradient)}")
-        interceptString.set(f"y-intercept:\n{str(intercept)}")
+        gradientString.set(f"Best: {str(round(gradient, 3))}")
+        interceptString.set(str(round(intercept, 3)))
         
     
     if len(x) == 1 and x[0] == 0: # If there is no entry, set the x and y limits to 10 as placeholder
@@ -282,8 +293,106 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         axes.set_ylim([0, np.max(y) * 1.1])
     
     canvas.draw() # Draw the canvas
+
+def calculateGradients(xUncertainty, yUncertainty, axes, canvas, xLabel, yLabel, minGradientString, maxGradientString):
     
-def openRP(mainFrame, xAxis, yAxis, xEntryTitle, yEntryTitle, originalEquation, linearisedEquation, mode):
+    global x
+    global y
+    
+    sortIndices = np.argsort(x)
+    
+    x = x[sortIndices]
+    y = y[sortIndices]
+    
+    try:
+        if len(xUncertainty) == 0 and len(yUncertainty) == 0:
+            xUncertainty = 0
+            yUncertainty = 0
+        elif len(xUncertainty) == 0:
+            xUncertainty = 0
+            yUncertainty = float(yUncertainty)
+        elif len(yUncertainty) == 0:
+            yUncertainty = 0
+            xUncertainty = float(xUncertainty)
+        else:
+            xUncertainty = float(xUncertainty)
+            yUncertainty = float(yUncertainty)
+    except:
+        return ""
+    
+    axes.cla()
+    
+    axes.set_ylabel(yLabel)
+    axes.set_xlabel(xLabel)
+    
+    axes.scatter(x, y, marker = "x", color = "black", s = 75)
+    
+    if xUncertainty > 0 and yUncertainty > 0:
+        axes.errorbar(x, y, xerr = xUncertainty, yerr = yUncertainty, capsize=5, ls = 'none')
+    elif xUncertainty == 0:
+        axes.errorbar(x, y, yerr = yUncertainty, capsize=5, ls = 'none')
+    elif yUncertainty == 0:
+        axes.errorbar(x, y, xerr = xUncertainty, capsize=5, ls = 'none')
+    
+    minGradientString.set("Min: Unavailable")
+    maxGradientString.set("Max: Unavailable")
+    
+    if len(x) > 1 and len(y) > 1: # Draws gradient and changes string variables if applicable
+        gradient, intercept = np.polyfit(x, y, 1)
+        axes.plot(x, gradient * x + intercept, linestyle = "--", linewidth = 1)
+        
+        minX = np.copy(x)
+        minY = np.copy(y)
+        
+        minX[0] = minX[0] - xUncertainty
+        minY[0] = minY[0] + yUncertainty
+        
+        minX[-1] = minX[-1] + xUncertainty
+        minY[-1] = minY[-1] - yUncertainty
+        
+        minXStart = minX[0]
+        minYStart = minY[0]
+        
+        minXEnd = minX[-1]
+        minYEnd = minY[-1]
+        
+        minGradient = (minYEnd - minYStart) / (minXEnd - minXStart)
+        minIntercept = minYStart - minGradient * minXStart
+        
+        axes.plot(minX, minGradient * minX + minIntercept, linestyle = "--", linewidth = 1)
+        minGradientString.set(f"Min: {str(round(minGradient, 3))}")
+        
+        maxX = np.copy(x)
+        maxY = np.copy(y)
+        
+        maxX[0] = maxX[0] + xUncertainty
+        maxY[0] = maxY[0] - yUncertainty
+        
+        maxX[-1] = maxX[-1] - xUncertainty
+        maxY[-1] = maxY[-1] + yUncertainty
+        
+        maxXStart = maxX[0]
+        maxYStart = maxY[0]
+        
+        maxXEnd = maxX[-1]
+        maxYEnd = maxY[-1]
+        
+        maxGradient = (maxYEnd - maxYStart) / (maxXEnd - maxXStart)
+        maxIntercept = maxYStart - maxGradient * maxXStart
+        
+        axes.plot(maxX, maxGradient * maxX + maxIntercept, linestyle = "--", linewidth = 1)
+        maxGradientString.set(f"Max: {str(round(maxGradient, 3))}")
+    
+    if len(x) == 1 and x[0] == 0: # If there is no entry, set the x and y limits to 10 as placeholder
+        axes.set_xlim([0, 10])
+        axes.set_ylim([0, 10])
+    else: # Otherwise set the x and y limits to 1.1x the largest values
+        axes.set_xlim([0, np.max(x) * 1.1])
+        axes.set_ylim([0, np.max(y) * 1.1])
+    
+    canvas.draw() # Draw the canvas
+
+def openRP(mainFrame, yAxis, xAxis, xEntryTitle, yEntryTitle, originalEquation, linearisedEquation, mode):
     destroyFrames(mainFrame)
     
     RPFrame = Frame(master = mainFrame, width = 880, height = 720, bd = 2, relief = "groove")
@@ -291,24 +400,81 @@ def openRP(mainFrame, xAxis, yAxis, xEntryTitle, yEntryTitle, originalEquation, 
     figure, axes, canvas = createGraph(RPFrame, xAxis, yAxis)
     
     rpInfoFrame = Frame(master = RPFrame, width = 602, height = 178, bg = darkGrey, bd = 2, relief = "groove")
-    rpInfoFrame.place(relx = 1, rely = 1, x = -10, y = -10, anchor = SE)
+    rpInfoFrame.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
     
-    gradientString = StringVar(master = rpInfoFrame, value = f"Gradient:\nUnavailable")
-    interceptString = StringVar(master = rpInfoFrame, value = f"y-intercept:\nUnavailable")
+    bestGradientString = StringVar(master = rpInfoFrame, value = "Best: Unavailable")
+    minGradientString = StringVar(master = rpInfoFrame, value = "Min: Unavailable")
+    maxGradientString = StringVar(master = rpInfoFrame, value = "Max: Unavailable")
+    interceptString = StringVar(master = rpInfoFrame, value = "Unavailable")
     
-    originalEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Original:\n{originalEquation}", font = ('Arial', 14))
-    linearisedEquation = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, text = f"Linearised:\n{linearisedEquation}", font = ('Arial', 14))
-    gradientLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = gradientString, font = ('Arial', 14))
-    interceptLabel = Label(master = rpInfoFrame, width = 27, height = 4, bg = darkGrey, bd = 0, textvariable = interceptString, font = ('Arial', 14))
+    originalEquationTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "Original:", font = ('Arial Bold', 13), fg = darkRed)
+    originalEquation = Label(master = rpInfoFrame, width = 27, height = 1, bg = darkGrey, bd = 0, text = originalEquation, font = ('Arial', 14))
     
-    originalEquation.grid(row = 0, column = 0)
-    linearisedEquation.grid(row = 0, column = 1)
-    gradientLabel.grid(row = 1, column = 0)
-    interceptLabel.grid(row = 1, column = 1)
+    linearisedEquationTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "Linearised:", font = ('Arial Bold', 13), fg = darkGreen)
+    linearisedEquation = Label(master = rpInfoFrame, width = 27, height = 1, bg = darkGrey, bd = 0, text = linearisedEquation, font = ('Arial', 14))
     
-    createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString)
+    gradientTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "Gradients:", font = ('Arial Bold', 13), fg = darkBlue)
+    gradientFrame = Frame(master = rpInfoFrame, width = 27, height = 3, bg = darkGrey, bd = 0)
     
-    RPFrame.pack()
+    bestGradientLabel = Label(master = gradientFrame, width = 27, height = 1, bg = darkGrey, bd = 0, textvariable = bestGradientString, font = ('Arial', 12))
+    minGradientLabel = Label(master = gradientFrame, width = 27, height = 1, bg = darkGrey, bd = 0, textvariable = minGradientString, font = ('Arial', 12))
+    maxGradientLabel = Label(master = gradientFrame, width = 27, height = 1, bg = darkGrey, bd = 0, textvariable = maxGradientString, font = ('Arial', 12))
+    
+    interceptTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "y-intercept:", font = ('Arial Bold', 13), fg = darkBlue)
+    interceptLabel = Label(master = rpInfoFrame, width = 27, height = 3, bg = darkGrey, bd = 0, textvariable = interceptString, font = ('Arial', 14))
+    
+    originalEquationTitle.grid(row = 0, column = 0)
+    linearisedEquationTitle.grid(row = 0, column = 1)
+    
+    originalEquation.grid(row = 1, column = 0)
+    linearisedEquation.grid(row = 1, column = 1)
+    
+    gradientTitle.grid(row = 2, column = 0)
+    interceptTitle.grid(row = 2, column = 1)
+    
+    gradientFrame.grid(row = 3, column = 0)
+    interceptLabel.grid(row = 3, column = 1)
+    
+    bestGradientLabel.grid(row = 0, column = 0)
+    minGradientLabel.grid(row = 1, column = 0)
+    maxGradientLabel.grid(row = 2, column = 0)
+    
+    createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, bestGradientString, interceptString)
+    
+    extraFrame = Frame(master = RPFrame, width = 240, height = 177, bg = darkGrey, bd = 2, relief = "groove")
+    extraFrame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
+    
+    uncertaintyTitle = Label(master = extraFrame, width = 12, height = 2, text = "Uncertainty", font = ('Arial Bold', 10), bg = darkGrey)
+    uncertaintyTitle.place(rely = 0, relx = 0.5, y = 3, anchor = N)
+    
+    xUncertaintyFrame = Frame(master = extraFrame, width = 200, height = 25, bg = darkGrey)
+    xUncertaintyFrame.place(relx = 0.5, rely = 0, y = 43, anchor = N)
+    
+    xUncertaintyTitle = Label(master = xUncertaintyFrame, width = 4, height = 1, text = "x = ±", font = ('Arial', 11), bg = darkGrey)
+    xUncertaintyTitle.grid(row = 0, column = 0)
+    
+    xUncertaintyEntry = Entry(master = xUncertaintyFrame)
+    xUncertaintyEntry.grid(row = 0, column = 1)
+    
+    yUncertaintyFrame = Frame(master = extraFrame, width = 200, height = 25, bg = darkGrey)
+    yUncertaintyFrame.place(relx = 0.5, rely = 0, y = 70, anchor = N)
+    
+    yUncertaintyTitle = Label(master = yUncertaintyFrame, width = 4, height = 1, text = "y = ±", font = ('Arial', 11), bg = darkGrey)
+    yUncertaintyTitle.grid(row = 0, column = 0)
+    
+    yUncertaintyEntry = Entry(master = yUncertaintyFrame)
+    yUncertaintyEntry.grid(row = 0, column = 1)
+    
+    calculateGradientButton = Button(master = extraFrame, width = 14, height = 1, text = "Calculate gradients", bd = 2, relief = "raised", command = lambda: calculateGradients(xUncertaintyEntry.get(), yUncertaintyEntry.get(), axes, canvas, xAxis, yAxis, minGradientString, maxGradientString))
+    calculateGradientButton.place(relx = 0.5, rely = 0, y = 100, anchor = N)
+    
+    RPFrame.pack(expand=True, fill="both")
+    
+    # grid of the actual RP
+    RPFrame.columnconfigure(0, weight=25)
+    RPFrame.columnconfigure(1, weight=75)
+    RPFrame.rowconfigure(0, weight=8)
+    RPFrame.rowconfigure(1, weight=2)
 
 root = Tk()
 main()
