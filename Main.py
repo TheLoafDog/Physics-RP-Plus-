@@ -1,3 +1,8 @@
+# make the graph holder interactive correctly so the border does not incrase but the graph itself as a whole
+# the data entry frame does not expand as well
+# (optional) make the side bar interactive as well
+
+
 from tkinter import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigureCanvas
 import matplotlib.pyplot as plt
@@ -106,7 +111,9 @@ def createGraph(currentFrame, xLabel, yLabel): # Subroutine called when new requ
     # Creates a frame to hold the graph
     
     graphHolder = Frame(master = currentFrame, width = 550, height = 500, bg = 'black')
-    graphHolder.place(relx = 1, rely = 0, x = -10, y = 10, anchor = NE)
+    graphHolder.grid(row=0, column=1, padx=5, pady=5, sticky="nsew")
+    graphHolder.grid_columnconfigure(0, weight = 1)
+    graphHolder.grid_rowconfigure(0, weight = 1)
     
     # Creates the graph UI
     
@@ -118,7 +125,7 @@ def createGraph(currentFrame, xLabel, yLabel): # Subroutine called when new requ
     # Canvas is used to draw the figure
     
     canvas = FigureCanvas(figure, master = graphHolder)
-    canvas.get_tk_widget().pack(padx = 1, pady = 1)
+    canvas.get_tk_widget().grid(column = 0, row = 0, padx = 6, pady = 6, sticky = 'nsew')
     
     # Resets global variables
     
@@ -142,20 +149,26 @@ def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, 
     # Creates base frame
     
     dataFrame = Frame(master = RPFrame, width = 240, height = 503, bg = darkGrey, bd = 2, relief = "groove")
-    dataFrame.place(relx = 0, rely = 0, x = 10, y = 10)
+    dataFrame.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
+    
+    dataFrame.grid_rowconfigure(0, weight = 1)
+    dataFrame.grid_rowconfigure(1, weight = 9)
+    
+    dataFrame.grid_columnconfigure(0, weight = 1)
+    dataFrame.grid_columnconfigure(1, weight = 1)
     
     # Creates the labels that tell the user what to input
     
     xTitle = Label(master = dataFrame, width = 12, height = 3, bg = darkGrey, text = xEntryTitle, font = ('Arial Bold', 8), justify = CENTER, wraplength = 100)
     yTitle = Label(master = dataFrame, width = 12, height = 3, bg = darkGrey, text = yEntryTitle, font = ('Arial Bold', 8), justify = CENTER, wraplength = 100)
     
-    xTitle.place(x = 10, y = 0)
-    yTitle.place(x = 110, y = 0)
+    xTitle.grid(row = 0, column = 0)
+    yTitle.grid(row = 0, column = 1)
     
     # Creates the frame where the data entry frames will be gridded into
     
     dataEntryFrame = Frame(master = dataFrame, width = 216, height = 430, bg = darkGrey)
-    dataEntryFrame.place(x = 10, y = 40)
+    dataEntryFrame.grid(row = 1, column = 0, columnspan = 2)
     
     # Creates the data entry frame
     
@@ -395,7 +408,13 @@ def openRP(mainFrame, yAxis, xAxis, xEntryTitle, yEntryTitle, originalEquation, 
     figure, axes, canvas = createGraph(RPFrame, xAxis, yAxis)
     
     rpInfoFrame = Frame(master = RPFrame, width = 602, height = 178, bg = darkGrey, bd = 2, relief = "groove")
-    rpInfoFrame.place(relx = 1, rely = 1, x = -10, y = -10, anchor = SE)
+    rpInfoFrame.grid(row=1, column=1, padx=5, pady=5, sticky="nsew")
+    rpInfoFrame.grid_columnconfigure(0, weight = 1)
+    rpInfoFrame.grid_columnconfigure(1, weight = 1)
+    rpInfoFrame.grid_rowconfigure(0, weight = 2)
+    rpInfoFrame.grid_rowconfigure(1, weight = 1)
+    rpInfoFrame.grid_rowconfigure(2, weight = 2)
+    rpInfoFrame.grid_rowconfigure(3, weight = 3)
     
     bestGradientString = StringVar(master = rpInfoFrame, value = "Best: Unavailable")
     minGradientString = StringVar(master = rpInfoFrame, value = "Min: Unavailable")
@@ -410,6 +429,10 @@ def openRP(mainFrame, yAxis, xAxis, xEntryTitle, yEntryTitle, originalEquation, 
     
     gradientTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "Gradients:", font = ('Arial Bold', 13), fg = darkBlue)
     gradientFrame = Frame(master = rpInfoFrame, width = 27, height = 3, bg = darkGrey, bd = 0)
+    gradientFrame.grid_rowconfigure(0, weight = 1)
+    gradientFrame.grid_rowconfigure(1, weight = 1)
+    gradientFrame.grid_rowconfigure(2, weight = 1)
+    gradientFrame.grid_columnconfigure(0, weight = 1)
     
     bestGradientLabel = Label(master = gradientFrame, width = 27, height = 1, bg = darkGrey, bd = 0, textvariable = bestGradientString, font = ('Arial', 12))
     minGradientLabel = Label(master = gradientFrame, width = 27, height = 1, bg = darkGrey, bd = 0, textvariable = minGradientString, font = ('Arial', 12))
@@ -418,26 +441,26 @@ def openRP(mainFrame, yAxis, xAxis, xEntryTitle, yEntryTitle, originalEquation, 
     interceptTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "y-intercept:", font = ('Arial Bold', 13), fg = darkBlue)
     interceptLabel = Label(master = rpInfoFrame, width = 27, height = 3, bg = darkGrey, bd = 0, textvariable = interceptString, font = ('Arial', 14))
     
-    originalEquationTitle.grid(row = 0, column = 0)
-    linearisedEquationTitle.grid(row = 0, column = 1)
+    originalEquationTitle.grid(row = 0, column = 0, sticky = 'nsew')
+    linearisedEquationTitle.grid(row = 0, column = 1, sticky = 'nsew')
     
-    originalEquation.grid(row = 1, column = 0)
-    linearisedEquation.grid(row = 1, column = 1)
+    originalEquation.grid(row = 1, column = 0, sticky = 'nsew')
+    linearisedEquation.grid(row = 1, column = 1, sticky = 'nsew')
     
-    gradientTitle.grid(row = 2, column = 0)
-    interceptTitle.grid(row = 2, column = 1)
+    gradientTitle.grid(row = 2, column = 0, sticky = 'nsew')
+    interceptTitle.grid(row = 2, column = 1, sticky = 'nsew')
     
-    gradientFrame.grid(row = 3, column = 0)
-    interceptLabel.grid(row = 3, column = 1)
+    gradientFrame.grid(row = 3, column = 0, sticky = 'nsew')
+    interceptLabel.grid(row = 3, column = 1, sticky = 'nsew')
     
-    bestGradientLabel.grid(row = 0, column = 0)
-    minGradientLabel.grid(row = 1, column = 0)
-    maxGradientLabel.grid(row = 2, column = 0)
+    bestGradientLabel.grid(row = 0, column = 0, sticky = 'nsew')
+    minGradientLabel.grid(row = 1, column = 0, sticky = 'nsew')
+    maxGradientLabel.grid(row = 2, column = 0, sticky = 'nsew')
     
     createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, bestGradientString, interceptString)
     
     extraFrame = Frame(master = RPFrame, width = 240, height = 177, bg = darkGrey, bd = 2, relief = "groove")
-    extraFrame.place(rely = 1, relx = 0, y = -10, x = 10, anchor = SW)
+    extraFrame.grid(row=1, column=0, padx=5, pady=5, sticky="nsew")
     
     uncertaintyTitle = Label(master = extraFrame, width = 12, height = 2, text = "Uncertainty", font = ('Arial Bold', 10), bg = darkGrey)
     uncertaintyTitle.place(rely = 0, relx = 0.5, y = 3, anchor = N)
@@ -463,7 +486,14 @@ def openRP(mainFrame, yAxis, xAxis, xEntryTitle, yEntryTitle, originalEquation, 
     calculateGradientButton = Button(master = extraFrame, width = 14, height = 1, text = "Calculate gradients", bd = 2, relief = "raised", command = lambda: calculateGradients(xUncertaintyEntry.get(), yUncertaintyEntry.get(), axes, canvas, xAxis, yAxis, minGradientString, maxGradientString))
     calculateGradientButton.place(relx = 0.5, rely = 0, y = 100, anchor = N)
     
-    RPFrame.pack()
+    RPFrame.pack(expand=True, fill="both")
+    
+    # grid of the actual RP
+    RPFrame.columnconfigure(0, weight=25)
+    RPFrame.columnconfigure(1, weight=75)
+    RPFrame.rowconfigure(0, weight=8)
+    RPFrame.rowconfigure(1, weight=2)
 
 root = Tk()
 main()
+
