@@ -64,7 +64,7 @@
 
 
 
-{'name': 'RP12 Inverse Square Law', 'yAxis': '', 'xAxis': '', 'xEntryTitle': '', 'yEntryTitle': '', 'originalEquation': '', 'linearisedEquation': '', 'mode': 1}
+{'name': 'RP12 Inverse Square Law', 'yAxis': '1 / √C', 'xAxis': 'x (m)', 'xEntryTitle': 'Distance (m)', 'yEntryTitle': 'Count rate (per min)', 'originalEquation': 'I ∝ 1/x²', 'linearisedEquation': '1 / √C = (k)x', 'mode': 4}
 
 
 
@@ -94,6 +94,7 @@
 
 
 {'name': 'RP1 Stationary Waves on a String', 'yAxis': '1 / Length (1 / m)', 'xAxis': 'Frequency (Hz)', 'xEntryTitle': 'Length (m)', 'yEntryTitle': 'Frequency (Hz)', 'originalEquation': 'λ = 2L', 'linearisedEquation': 'f = (v/2)(1/L)', 'mode': 1}
+
 
 
 
