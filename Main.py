@@ -1,7 +1,4 @@
-# make the graph holder interactive correctly so the border does not incrase but the graph itself as a whole
 # the data entry frame does not expand as well
-# (optional) make the side bar interactive as well
-
 
 from tkinter import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigureCanvas
@@ -65,11 +62,18 @@ def main():
     sideBar = Frame(master = root, width = 200, height = 720, bd = 2, relief = "groove", bg = darkGrey)
     sideBar.grid(row = 0, column = 0, sticky = "nsew")
     
+    sideBar.grid_columnconfigure(0, weight = 1)
+    sideBar.grid_rowconfigure(0, weight = 1)
+    sideBar.grid_rowconfigure(1, weight = 12)
+    
     sideBarTitle = Label(master = sideBar, width = 20, height = 3, text = "Physics RP Plus", bg = darkGrey, font = ('Arial', 12))
-    sideBarTitle.place(relx = 0.5, rely = 0.05, anchor = CENTER)
+    sideBarTitle.grid(row = 0, column = 0, padx = 10, pady = 10, sticky = 'nsew')
+    #sideBarTitle.place(relx = 0.5, rely = 0.05, anchor = CENTER)
     
     sideBarButtonFrame = Frame(master = sideBar, width = 150, height = 625, bd = 2, relief = "groove", bg = darkGrey)
-    sideBarButtonFrame.place(relx = 0.5, rely = 0.525, anchor = CENTER)
+    sideBarButtonFrame.grid(row = 1, column = 0, padx = 25, pady = 25, sticky = 'nsew')
+    sideBarButtonFrame.grid_columnconfigure(0, weight = 1)
+    #sideBarButtonFrame.place(relx = 0.5, rely = 0.525, anchor = CENTER)
     
     # For scaling program
     
@@ -86,13 +90,14 @@ def main():
     contributors = Label(master = welcomeFrame, width = 45, height = 2, text = "Developed by Brandon Jake Nuñez and Fahad Wasim", font = ('Arial', 15))
     contributors.place(relx = 0.5, rely = 0.6, anchor = CENTER)
     
-    welcomeFrame.pack()
+    welcomeFrame.pack(fill = BOTH, expand = True)
     
     # Creates sidebar buttons
     
     for i in range(0,12):
+        sideBarButtonFrame.grid_rowconfigure(i, weight = 1)
         newSideBarButton = Button(master = sideBarButtonFrame, width = 20, height = 2, bd = 2, relief = "raised", text = requiredPracticalList[i], wraplength = 125, command = lambda i = i: openRP(mainFrame, hashGet(requiredPracticalList[i])["xAxis"], hashGet(requiredPracticalList[i])["yAxis"], hashGet(requiredPracticalList[i])["xEntryTitle"], hashGet(requiredPracticalList[i])["yEntryTitle"], hashGet(requiredPracticalList[i])["originalEquation"], hashGet(requiredPracticalList[i])["linearisedEquation"], hashGet(requiredPracticalList[i])["mode"]))
-        newSideBarButton.grid(row = i, column = 0, padx = 5, pady = 5)
+        newSideBarButton.grid(row = i, column = 0, padx = 6, pady = 3, sticky = 'nsew')
     
     root.mainloop()
 
@@ -152,23 +157,29 @@ def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, 
     dataFrame.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
     
     dataFrame.grid_rowconfigure(0, weight = 1)
-    dataFrame.grid_rowconfigure(1, weight = 9)
+    dataFrame.grid_rowconfigure(1, weight = 500)
     
     dataFrame.grid_columnconfigure(0, weight = 1)
     dataFrame.grid_columnconfigure(1, weight = 1)
     
     # Creates the labels that tell the user what to input
     
-    xTitle = Label(master = dataFrame, width = 12, height = 3, bg = darkGrey, text = xEntryTitle, font = ('Arial Bold', 8), justify = CENTER, wraplength = 100)
-    yTitle = Label(master = dataFrame, width = 12, height = 3, bg = darkGrey, text = yEntryTitle, font = ('Arial Bold', 8), justify = CENTER, wraplength = 100)
+    xTitle = Label(master = dataFrame, width = 12, height = 3, text = xEntryTitle, font = ('Arial Bold', 8), wraplength = 100, bg = darkGrey)
+    yTitle = Label(master = dataFrame, width = 12, height = 3, text = yEntryTitle, font = ('Arial Bold', 8), wraplength = 100, bg = darkGrey)
     
-    xTitle.grid(row = 0, column = 0)
-    yTitle.grid(row = 0, column = 1)
+    xTitle.grid(row = 0, column = 0, sticky = 'nsew')
+    yTitle.grid(row = 0, column = 1, sticky = 'nsew')
     
     # Creates the frame where the data entry frames will be gridded into
     
-    dataEntryFrame = Frame(master = dataFrame, width = 216, height = 430, bg = darkGrey)
-    dataEntryFrame.grid(row = 1, column = 0, columnspan = 2)
+    dataHolderFrame = Frame(master = dataFrame, width = 240, height = 430, bg = darkGrey)
+    dataHolderFrame.grid(row = 1, column = 0, columnspan = 2, sticky = 'nsew')
+    
+    dataEntryFrame = Frame(master = dataHolderFrame, width = 216, height = 430, bg = darkGrey)
+    dataEntryFrame.grid_columnconfigure(0, weight = 1)
+    for i in range(16):
+        dataEntryFrame.grid_rowconfigure(i, weight = 1)
+    dataEntryFrame.pack()
     
     # Creates the data entry frame
     
@@ -180,7 +191,7 @@ def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, 
     xEntry.place(x = 0, y = 0, width = 90, height = 20)
     yEntry.place(x = 100, y = 0, width = 90, height = 20)
     addButton.place(x = 196, y = 0)
-    dataEntry.grid(row = 0, column = 0, pady = 3)
+    dataEntry.grid(row = 0, column = 0, pady = 3, sticky = 'nsew')
     # First data entry will be gridded at row 0
 
 def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString): # Refreshes the graph with the new data
@@ -203,6 +214,8 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         elif mode == 3:
             radians = newX * ( math.pi / 180.0 )
             newX = math.cos(radians)
+        elif mode == 4:
+            newY = 1 / math.sqrt(newY)
     except:
         return ""
     
@@ -231,6 +244,8 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
             mode = 2
         elif xLabel == "cos(θ)":
             mode = 3
+        elif yLabel == '1 / √C':
+            mode = 4
         
         entryButton.config(bg = lightRed) # Changes the button colour to red, indicating that pressing it will remove the data entry
         x = np.array([newX]) # Replaces the x and y arrays with the new entry, since there is only one entry
@@ -245,7 +260,7 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         xEntry.place(x = 0, y = 0, width = 90, height = 20)
         yEntry.place(x = 100, y = 0, width = 90, height = 20)
         addButton.place(x = 196, y = 0)
-        dataEntry.grid(row = rowIndex, column = 0, pady = 3)
+        dataEntry.grid(row = rowIndex, column = 0, pady = 3, sticky = 'nsew')
         rowIndex += 1 # Places it at the new row, and adds one to the row index
     elif len(x) == 16: # If there are max entries, do nothing
         return ""
@@ -259,6 +274,8 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
             mode = 2
         elif xLabel == "cos(θ)":
             mode = 3
+        elif yLabel == '1 / √C':
+            mode = 4
         
         # Does the exact same as previous condition, except appends the new values to the x and y arrays
         
@@ -273,7 +290,7 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         xEntry.place(x = 0, y = 0, width = 90, height = 20)
         yEntry.place(x = 100, y = 0, width = 90, height = 20)
         addButton.place(x = 196, y = 0)
-        dataEntry.grid(row = rowIndex, column = 0, pady = 3)
+        dataEntry.grid(row = rowIndex, column = 0, pady = 3, sticky = 'nsew')
         rowIndex += 1
     
     sortIndices = np.argsort(x)
