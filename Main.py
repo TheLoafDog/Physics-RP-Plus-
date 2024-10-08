@@ -157,41 +157,46 @@ def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, 
     dataFrame.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
     
     dataFrame.grid_rowconfigure(0, weight = 1)
-    dataFrame.grid_rowconfigure(1, weight = 500)
+    dataFrame.grid_rowconfigure(1, weight = 1)
+    dataFrame.grid_rowconfigure(2, weight = 12)
     
     dataFrame.grid_columnconfigure(0, weight = 1)
     dataFrame.grid_columnconfigure(1, weight = 1)
     
+    typeButton = Button(master = dataFrame, width = 18, height = 1, text = "Mode: Single", font = ('Arial', 12), bd = 2, relief = 'raised')
+    typeButton.grid(row = 0, column = 0, columnspan = 2, pady = 10, padx = 10, sticky = 'nsew')
+    
     # Creates the labels that tell the user what to input
     
-    xTitle = Label(master = dataFrame, width = 12, height = 3, text = xEntryTitle, font = ('Arial Bold', 8), wraplength = 100, bg = darkGrey)
-    yTitle = Label(master = dataFrame, width = 12, height = 3, text = yEntryTitle, font = ('Arial Bold', 8), wraplength = 100, bg = darkGrey)
+    xTitle = Label(master = dataFrame, width = 12, height = 1, text = xEntryTitle, font = ('Arial Bold', 10), wraplength = 100, bg = darkGrey)
+    yTitle = Label(master = dataFrame, width = 12, height = 1, text = yEntryTitle, font = ('Arial Bold', 10), wraplength = 100, bg = darkGrey)
     
-    xTitle.grid(row = 0, column = 0, sticky = 'nsew')
-    yTitle.grid(row = 0, column = 1, sticky = 'nsew')
+    xTitle.grid(row = 1, column = 0, sticky = 'nsew')
+    yTitle.grid(row = 1, column = 1, sticky = 'nsew')
     
     # Creates the frame where the data entry frames will be gridded into
     
-    dataHolderFrame = Frame(master = dataFrame, width = 240, height = 430, bg = darkGrey)
-    dataHolderFrame.grid(row = 1, column = 0, columnspan = 2, sticky = 'nsew')
-    
-    dataEntryFrame = Frame(master = dataHolderFrame, width = 216, height = 430, bg = darkGrey)
+    dataEntryFrame = Frame(master = dataFrame, width = 216, height = 430, bg = darkGrey)
     dataEntryFrame.grid_columnconfigure(0, weight = 1)
     for i in range(16):
         dataEntryFrame.grid_rowconfigure(i, weight = 1)
-    dataEntryFrame.pack()
+    dataEntryFrame.grid(row = 2, column = 0, columnspan = 2, padx = 10, pady = 10, sticky = 'nsew')
     
     # Creates the data entry frame
     
     dataEntry = Frame(master = dataEntryFrame, width = 216, height = 20, bg = darkGrey)
+    dataEntry.grid_columnconfigure(0, weight = 20)
+    dataEntry.grid_columnconfigure(1, weight = 20)
+    dataEntry.grid_columnconfigure(2, weight = 5)
+    dataEntry.grid_rowconfigure(0, weight = 1)
     xEntry = Entry(master = dataEntry)
     yEntry = Entry(master = dataEntry)
     # The button will refresh the graph with the new entries
-    addButton = Button(master = dataEntry, height = 20, width = 20, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, dataEntryFrame, xAxis, yAxis, mode, gradientString, interceptString))
-    xEntry.place(x = 0, y = 0, width = 90, height = 20)
-    yEntry.place(x = 100, y = 0, width = 90, height = 20)
-    addButton.place(x = 196, y = 0)
-    dataEntry.grid(row = 0, column = 0, pady = 3, sticky = 'nsew')
+    addButton = Button(master = dataEntry, height = 1, width = 2, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, dataEntryFrame, xAxis, yAxis, mode, gradientString, interceptString))
+    xEntry.grid(row = 0, column = 0, padx = 5, sticky = 'ew')
+    yEntry.grid(row = 0, column = 1, padx = 5, sticky = 'ew')
+    addButton.grid(row = 0, column = 2, padx = 5, sticky = 'ew')
+    dataEntry.grid(row = 0, column = 0, pady = 1, sticky = 'ew')
     # First data entry will be gridded at row 0
 
 def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString): # Refreshes the graph with the new data
@@ -254,13 +259,17 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         # Creates the new frame for new entries
         
         dataEntry = Frame(master = entryListFrame, width = 216, height = 20, bg = darkGrey)
+        dataEntry.grid_columnconfigure(0, weight = 20)
+        dataEntry.grid_columnconfigure(1, weight = 20)
+        dataEntry.grid_columnconfigure(2, weight = 5)
+        dataEntry.grid_rowconfigure(0, weight = 1)
         xEntry = Entry(master = dataEntry)
         yEntry = Entry(master = dataEntry)
-        addButton = Button(master = dataEntry, height = 20, width = 20, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString))
-        xEntry.place(x = 0, y = 0, width = 90, height = 20)
-        yEntry.place(x = 100, y = 0, width = 90, height = 20)
-        addButton.place(x = 196, y = 0)
-        dataEntry.grid(row = rowIndex, column = 0, pady = 3, sticky = 'nsew')
+        addButton = Button(master = dataEntry, height = 1, width = 2, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString))
+        xEntry.grid(row = 0, column = 0, padx = 5, sticky = 'ew')
+        yEntry.grid(row = 0, column = 1, padx = 5, sticky = 'ew')
+        addButton.grid(row = 0, column = 2, padx = 5, sticky = 'ew')
+        dataEntry.grid(row = rowIndex, column = 0, pady = 1, sticky = 'ew')
         rowIndex += 1 # Places it at the new row, and adds one to the row index
     elif len(x) == 16: # If there are max entries, do nothing
         return ""
@@ -284,13 +293,17 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         y = np.append(y, [newY])
         
         dataEntry = Frame(master = entryListFrame, width = 216, height = 20, bg = darkGrey)
+        dataEntry.grid_columnconfigure(0, weight = 20)
+        dataEntry.grid_columnconfigure(1, weight = 20)
+        dataEntry.grid_columnconfigure(2, weight = 5)
+        dataEntry.grid_rowconfigure(0, weight = 1)
         xEntry = Entry(master = dataEntry)
         yEntry = Entry(master = dataEntry)
-        addButton = Button(master = dataEntry, height = 20, width = 20, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString))
-        xEntry.place(x = 0, y = 0, width = 90, height = 20)
-        yEntry.place(x = 100, y = 0, width = 90, height = 20)
-        addButton.place(x = 196, y = 0)
-        dataEntry.grid(row = rowIndex, column = 0, pady = 3, sticky = 'nsew')
+        addButton = Button(master = dataEntry, height = 1, width = 2, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString))
+        xEntry.grid(row = 0, column = 0, padx = 5, sticky = 'ew')
+        yEntry.grid(row = 0, column = 1, padx = 5, sticky = 'ew')
+        addButton.grid(row = 0, column = 2, padx = 5, sticky = 'ew')
+        dataEntry.grid(row = rowIndex, column = 0, pady = 1, sticky = 'ew')
         rowIndex += 1
     
     sortIndices = np.argsort(x)
@@ -417,7 +430,7 @@ def calculateGradients(xUncertainty, yUncertainty, axes, canvas, xLabel, yLabel,
     
     canvas.draw() # Draw the canvas
 
-def openRP(mainFrame, yAxis, xAxis, xEntryTitle, yEntryTitle, originalEquation, linearisedEquation, mode):
+def openRP(mainFrame, xAxis, yAxis, xEntryTitle, yEntryTitle, originalEquation, linearisedEquation, mode):
     destroyFrames(mainFrame)
     
     RPFrame = Frame(master = mainFrame, width = 880, height = 720, bd = 2, relief = "groove")
