@@ -43,6 +43,8 @@ def hashGet(key):
 
 x = np.array([0]) # x is the points on the x axis. Gets reset every time new practical is opened.
 y = np.array([0]) # y is the points on the y axis. Gets reset every time new practical is opened.
+multiplex = np.array([0])
+multipley = np.array([0])
 rowIndex = 1 # This is used for creating new entries. It uses the rowIndex as the row when gridding. Gets reset every time new practical is opened.
 
 def main():
@@ -111,6 +113,8 @@ def createGraph(currentFrame, xLabel, yLabel): # Subroutine called when new requ
     
     global x
     global y
+    global multiplex
+    global multipley
     global rowIndex
     
     # Creates a frame to hold the graph
@@ -136,6 +140,8 @@ def createGraph(currentFrame, xLabel, yLabel): # Subroutine called when new requ
     
     x = np.array([0])
     y = np.array([0])
+    multiplex = np.array([0])
+    multipley = np.array([0])
     rowIndex = 1
     
     # Creates the placeholder graph
@@ -148,6 +154,57 @@ def createGraph(currentFrame, xLabel, yLabel): # Subroutine called when new requ
     canvas.draw() # Draws the graph
     
     return figure, axes, canvas # Returns figure, axes and canvas so the graph can be changed in the future
+
+def changeEntryMode(dataEntryFrame, typeText, axes, canvas, xAxis, yAxis, mode, gradientString, interceptString):
+    
+    global x
+    global y
+    global multiplex
+    global multipley
+    
+    x = np.array([0])
+    y = np.array([0])
+    multiplex = np.array([0])
+    multipley = np.array([0])
+    
+    for widget in dataEntryFrame.winfo_children():
+        widget.destroy()
+    
+    if typeText.get() == "Mode: Single":
+        typeText.set("Mode: Multiple")
+        
+        dataEntry = Frame(master = dataEntryFrame, width = 216, height = 20, bg = darkGrey)
+        dataEntry.grid_columnconfigure(0, weight = 20)
+        dataEntry.grid_columnconfigure(1, weight = 20)
+        dataEntry.grid_columnconfigure(2, weight = 5)
+        dataEntry.grid_rowconfigure(0, weight = 1)
+        xEntry = Entry(master = dataEntry)
+        yButton = Button(master = dataEntry, height = 1, width = 16, text = "Insert Y values")
+        # The button will refresh the graph with the new entries
+        addButton = Button(master = dataEntry, height = 1, width = 2, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshSingleGraph(axes, canvas, xEntry.get(), 99999999999999, dataEntry, addButton, dataEntryFrame, xAxis, yAxis, mode, gradientString, interceptString))
+        xEntry.grid(row = 0, column = 0, padx = 5, sticky = 'ew')
+        yButton.grid(row = 0, column = 1, padx = 5, sticky = 'ew')
+        addButton.grid(row = 0, column = 2, padx = 5, sticky = 'ew')
+        dataEntry.grid(row = 0, column = 0, pady = 1, sticky = 'ew')
+        # First data entry will be gridded at row 0
+        
+    else:
+        typeText.set("Mode: Single")
+        
+        dataEntry = Frame(master = dataEntryFrame, width = 216, height = 20, bg = darkGrey)
+        dataEntry.grid_columnconfigure(0, weight = 20)
+        dataEntry.grid_columnconfigure(1, weight = 20)
+        dataEntry.grid_columnconfigure(2, weight = 5)
+        dataEntry.grid_rowconfigure(0, weight = 1)
+        xEntry = Entry(master = dataEntry)
+        yEntry = Entry(master = dataEntry)
+        # The button will refresh the graph with the new entries
+        addButton = Button(master = dataEntry, height = 1, width = 2, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshSingleGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, dataEntryFrame, xAxis, yAxis, mode, gradientString, interceptString))
+        xEntry.grid(row = 0, column = 0, padx = 5, sticky = 'ew')
+        yEntry.grid(row = 0, column = 1, padx = 5, sticky = 'ew')
+        addButton.grid(row = 0, column = 2, padx = 5, sticky = 'ew')
+        dataEntry.grid(row = 0, column = 0, pady = 1, sticky = 'ew')
+        # First data entry will be gridded at row 0
 
 def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString): # Creates the frame where the user can enter data
     
@@ -163,9 +220,6 @@ def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, 
     dataFrame.grid_columnconfigure(0, weight = 1)
     dataFrame.grid_columnconfigure(1, weight = 1)
     
-    typeButton = Button(master = dataFrame, width = 18, height = 1, text = "Mode: Single", font = ('Arial', 12), bd = 2, relief = 'raised')
-    typeButton.grid(row = 0, column = 0, columnspan = 2, pady = 10, padx = 10, sticky = 'nsew')
-    
     # Creates the labels that tell the user what to input
     
     xTitle = Label(master = dataFrame, width = 12, height = 1, text = xEntryTitle, font = ('Arial Bold', 10), wraplength = 100, bg = darkGrey)
@@ -178,8 +232,7 @@ def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, 
     
     dataEntryFrame = Frame(master = dataFrame, width = 216, height = 430, bg = darkGrey)
     dataEntryFrame.grid_columnconfigure(0, weight = 1)
-    for i in range(16):
-        dataEntryFrame.grid_rowconfigure(i, weight = 1)
+    dataEntryFrame.grid_rowconfigure(999, weight = 1)
     dataEntryFrame.grid(row = 2, column = 0, columnspan = 2, padx = 10, pady = 10, sticky = 'nsew')
     
     # Creates the data entry frame
@@ -192,14 +245,19 @@ def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, 
     xEntry = Entry(master = dataEntry)
     yEntry = Entry(master = dataEntry)
     # The button will refresh the graph with the new entries
-    addButton = Button(master = dataEntry, height = 1, width = 2, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, dataEntryFrame, xAxis, yAxis, mode, gradientString, interceptString))
+    addButton = Button(master = dataEntry, height = 1, width = 2, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshSingleGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, dataEntryFrame, xAxis, yAxis, mode, gradientString, interceptString))
     xEntry.grid(row = 0, column = 0, padx = 5, sticky = 'ew')
     yEntry.grid(row = 0, column = 1, padx = 5, sticky = 'ew')
     addButton.grid(row = 0, column = 2, padx = 5, sticky = 'ew')
     dataEntry.grid(row = 0, column = 0, pady = 1, sticky = 'ew')
     # First data entry will be gridded at row 0
+    
+    typeText = StringVar(master = dataFrame, value = "Mode: Single")
+    
+    typeButton = Button(master = dataFrame, width = 18, height = 1, textvariable = typeText, font = ('Arial', 12), bd = 2, relief = 'raised', command = lambda: changeEntryMode(dataEntryFrame, typeText, axes, canvas, xAxis, yAxis, mode, gradientString, interceptString))
+    typeButton.grid(row = 0, column = 0, columnspan = 2, pady = 10, padx = 10, sticky = 'nsew')
 
-def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString): # Refreshes the graph with the new data
+def refreshSingleGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString): # Refreshes the graph with the new data
     
     # Retrieves global variables
     
@@ -265,7 +323,7 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         dataEntry.grid_rowconfigure(0, weight = 1)
         xEntry = Entry(master = dataEntry)
         yEntry = Entry(master = dataEntry)
-        addButton = Button(master = dataEntry, height = 1, width = 2, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString))
+        addButton = Button(master = dataEntry, height = 1, width = 2, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshSingleGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString))
         xEntry.grid(row = 0, column = 0, padx = 5, sticky = 'ew')
         yEntry.grid(row = 0, column = 1, padx = 5, sticky = 'ew')
         addButton.grid(row = 0, column = 2, padx = 5, sticky = 'ew')
@@ -299,7 +357,7 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         dataEntry.grid_rowconfigure(0, weight = 1)
         xEntry = Entry(master = dataEntry)
         yEntry = Entry(master = dataEntry)
-        addButton = Button(master = dataEntry, height = 1, width = 2, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString))
+        addButton = Button(master = dataEntry, height = 1, width = 2, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshSingleGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString))
         xEntry.grid(row = 0, column = 0, padx = 5, sticky = 'ew')
         yEntry.grid(row = 0, column = 1, padx = 5, sticky = 'ew')
         addButton.grid(row = 0, column = 2, padx = 5, sticky = 'ew')
@@ -310,6 +368,153 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
     
     x = x[sortIndices]
     y = y[sortIndices]
+    
+    axes.scatter(x, y, marker = "x", color = "black", s = 75) # Displays the new updated graph
+    
+    gradientString.set("Best: Unavailable") # Sets the string variables to unavailable, changes if they are available
+    interceptString.set("Unavailable")
+    
+    if len(x) > 1 and len(y) > 1: # Draws gradient and changes string variables if applicable
+        gradient, intercept = np.polyfit(x, y, 1)
+        axes.plot(x, gradient * x + intercept, linestyle = "--", linewidth = 1)
+        gradientString.set(f"Best: {str(round(gradient, 3))}")
+        interceptString.set(str(round(intercept, 3)))
+        
+    
+    if len(x) == 1 and x[0] == 0: # If there is no entry, set the x and y limits to 10 as placeholder
+        axes.set_xlim([0, 10])
+        axes.set_ylim([0, 10])
+    else: # Otherwise set the x and y limits to 1.1x the largest values
+        axes.set_xlim([0, np.max(x) * 1.1])
+        axes.set_ylim([0, np.max(y) * 1.1])
+    
+    canvas.draw() # Draw the canvas
+
+def refreshMultipleGraph(axes, canvas, newX, yValues, entryFrame, entryButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString): # Refreshes the graph with the new data
+    
+    # Retrieves global variables
+    
+    global multiplex
+    global multipley
+    global rowIndex
+    
+    # Tries to convert user input into numbers, if it cannot then it does nothing
+    
+    try:
+        newX = float(newX)
+        newY = float(newY)
+        if mode == 1: # If the mode is 1 (1 / x), set the new x value as 1 / x
+            newX = 1 / float(newX)
+        elif mode == 2:
+            for value in yValues:
+                value = math.log(value)
+        elif mode == 3:
+            radians = newX * ( math.pi / 180.0 )
+            newX = math.cos(radians)
+        elif mode == 4:
+            for value in yValues:
+                value = 1 / math.sqrt(value)
+    except:
+        return ""
+    
+    axes.cla() # Clears current axes
+    
+    axes.set_ylabel(yLabel) # Re-adds current labels
+    axes.set_xlabel(xLabel)
+    
+    if newX in multiplex and yValues in multipley: # Checks to see if the data exists already (If it exists then a delete button was likely pressed, so it will treat it as a removal)
+        entryFrame.destroy() # Deletes the entry frame as it was removed
+        if len(multiplex) == 1: # If it is the only entry, it resets the graph
+            multiplex = np.array([0])
+            multipley = np.array([0])
+        else: # Otherwise it just deletes the entry
+            indexX = np.where(multiplex == newX)[0][0]
+            indexY = np.where(multipley == yValues)[0][0]
+            multiplex = np.delete(multiplex, indexX)
+            multipley = np.delete(multipley, indexY)
+    elif len(multiplex) == 1 and multiplex[0] == 0: # If there is no other data (x only has one entry, 0) and data is added
+        
+        mode = 0 # The mode is determined to see what operation is done to the entries. Mode 1, for example, applies 1 / x to the x entry
+        
+        if xLabel == "1 / Length (1 / m)": # Checks to see if mode 1 is applicable
+            mode = 1
+        elif yLabel == "ln(V)":
+            mode = 2
+        elif xLabel == "cos(θ)":
+            mode = 3
+        elif yLabel == '1 / √C':
+            mode = 4
+        
+        entryButton.config(bg = lightRed) # Changes the button colour to red, indicating that pressing it will remove the data entry
+        multiplex = np.array([newX]) # Replaces the x and y arrays with the new entry, since there is only one entry
+        multipley = np.array(yValues)
+        
+        # Creates the new frame for new entries
+        
+        dataEntry = Frame(master = dataEntryFrame, width = 216, height = 20, bg = darkGrey)
+        dataEntry.grid_columnconfigure(0, weight = 20)
+        dataEntry.grid_columnconfigure(1, weight = 20)
+        dataEntry.grid_columnconfigure(2, weight = 5)
+        dataEntry.grid_rowconfigure(0, weight = 1)
+        xEntry = Entry(master = dataEntry)
+        yButton = Button(master = dataEntry, height = 1, width = 16, text = "Insert Y values")
+        addButton = Button(master = dataEntry, height = 1, width = 2, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshSingleGraph(axes, canvas, xEntry.get(), 99999999999999, dataEntry, addButton, dataEntryFrame, xAxis, yAxis, mode, gradientString, interceptString))
+        xEntry.grid(row = 0, column = 0, padx = 5, sticky = 'ew')
+        yButton.grid(row = 0, column = 1, padx = 5, sticky = 'ew')
+        addButton.grid(row = 0, column = 2, padx = 5, sticky = 'ew')
+        dataEntry.grid(row = rowIndex, column = 0, pady = 1, sticky = 'ew')
+        rowIndex += 1 # Places it at the new row, and adds one to the row index
+    elif len(multiplex) == 16: # If there are max entries, do nothing
+        return ""
+    else:
+        
+        mode = 0 # The mode is determined to see what operation is done to the entries. Mode 1, for example, applies 1 / x to the x entry
+        
+        if xLabel == "1 / Length (1 / m)": # Checks to see if mode 1 is applicable
+            mode = 1
+        elif yLabel == "ln(V)":
+            mode = 2
+        elif xLabel == "cos(θ)":
+            mode = 3
+        elif yLabel == '1 / √C':
+            mode = 4
+        
+        # Does the exact same as previous condition, except appends the new values to the x and y arrays
+        
+        entryButton.config(bg = lightRed) # Changes the button colour to red, indicating that pressing it will remove the data entry
+        multiplex = np.array([newX]) # Replaces the x and y arrays with the new entry, since there is only one entry
+        multipley = np.array(yValues)
+        
+        # Creates the new frame for new entries
+        
+        dataEntry = Frame(master = dataEntryFrame, width = 216, height = 20, bg = darkGrey)
+        dataEntry.grid_columnconfigure(0, weight = 20)
+        dataEntry.grid_columnconfigure(1, weight = 20)
+        dataEntry.grid_columnconfigure(2, weight = 5)
+        dataEntry.grid_rowconfigure(0, weight = 1)
+        xEntry = Entry(master = dataEntry)
+        yButton = Button(master = dataEntry, height = 1, width = 16, text = "Insert Y values")
+        addButton = Button(master = dataEntry, height = 1, width = 2, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshSingleGraph(axes, canvas, xEntry.get(), 99999999999999, dataEntry, addButton, dataEntryFrame, xAxis, yAxis, mode, gradientString, interceptString))
+        xEntry.grid(row = 0, column = 0, padx = 5, sticky = 'ew')
+        yButton.grid(row = 0, column = 1, padx = 5, sticky = 'ew')
+        addButton.grid(row = 0, column = 2, padx = 5, sticky = 'ew')
+        dataEntry.grid(row = rowIndex, column = 0, pady = 1, sticky = 'ew')
+        rowIndex += 1 # Places it at the new row, and adds one to the row index
+    
+    sortIndices = np.argsort(multiplex)
+    
+    multiplex = multiplex[sortIndices]
+    multipley = multipley[sortIndices]
+    
+    for rangeY in multipley:
+        rangeY = sorted(rangeY)
+        total = 0
+        for item in rangeY:
+            total += item
+        average = total / len(rangeY)
+        halfRange = (rangeY[-1] - rangeY[0]) / 2
+    
+    axes.errorbar(x, y, xerr = 0, yerr = yUncertainty, capsize=5, ls = 'none')
     
     axes.scatter(x, y, marker = "x", color = "black", s = 75) # Displays the new updated graph
     
