@@ -10,7 +10,7 @@ Items tagged [needs Brandon] are skipped by unattended runs.
 - [x] Guard the app start-up with `if __name__ == "__main__":` so modules can be imported without opening a window.
 - [x] Move the data-transform logic (`mode` 0–3) into a pure function (e.g. `transform_point(x, y, mode)`) and drop the label-string mode re-detection inside `refreshGraph`.
 - [x] Add a pytest harness with tests for `hashGet` (all 12 RPs found) and the transform function.
-- [ ] Add a GitHub Actions workflow running `py_compile` and `pytest` on push/PR.
+- [x] Add a GitHub Actions workflow running `py_compile` and `pytest` on push/PR.
 - [ ] Remove the duplicated "create new entry row" code in `refreshGraph` (three near-identical blocks) into one helper.
 - [ ] Untangle the x/y naming: `openRP(mainFrame, yAxis, xAxis, ...)` receives `xAxis` as `yAxis`, and the RP dicts' `xAxis`/`yAxis` fields are swapped relative to the entry titles. Make the field names mean what they say without changing what's displayed.
 - [ ] Fix removal of a data point: it currently checks `newX in x and newY in y` independently and deletes by separate x/y indices, so it can remove the wrong pair. Match on the (x, y) pair instead.
