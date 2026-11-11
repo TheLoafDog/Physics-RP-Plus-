@@ -4,7 +4,7 @@ Ordered checklist. Up to 4 items per Claude session; each should fit in one smal
 Items tagged [needs Brandon] are skipped by unattended runs.
 
 ## Phase 1 — Structure and tooling
-- [ ] README: add requirements, install and run instructions, and a short description of how to use the app.
+- [x] README: add requirements, install and run instructions, and a short description of how to use the app.
 - [ ] Add `requirements.txt` (matplotlib, numpy) and a `.gitignore` for Python (`__pycache__/`, venvs).
 - [ ] Move practical data and `hashGet` into a tkinter-free module (e.g. `rp_data.py`) used by both `Main.py` and `hashing.py`, removing the duplicated `hashGet`; resolve `RP info.txt` relative to the script file so the app runs from any directory.
 - [ ] Guard the app start-up with `if __name__ == "__main__":` so modules can be imported without opening a window.
