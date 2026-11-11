@@ -84,12 +84,6 @@ def destroyFrames(mainFrame): # Subroutine to destroy all frames in mainFrame. M
 
 def createGraph(currentFrame, xLabel, yLabel): # Subroutine called when new required practical is opened. Creates the UI for the graph.
     
-    # Gets all global variables to reset them, as this is a new required practical
-    
-    global x
-    global y
-    global rowIndex
-    
     # Creates a frame to hold the graph
     
     graphHolder = Frame(master = currentFrame, width = 550, height = 500, bg = 'black')
@@ -107,6 +101,16 @@ def createGraph(currentFrame, xLabel, yLabel): # Subroutine called when new requ
     canvas = FigureCanvas(figure, master = graphHolder)
     canvas.get_tk_widget().pack(padx = 1, pady = 1)
     
+    resetGraph(axes, canvas, xLabel, yLabel) # Resets the data arrays and draws the placeholder graph
+    
+    return figure, axes, canvas # Returns figure, axes and canvas so the graph can be changed in the future
+
+def resetGraph(axes, canvas, xLabel, yLabel): # Forgets all readings and draws the empty placeholder graph (used when a practical is opened and by the Clear button)
+    
+    global x
+    global y
+    global rowIndex
+    
     # Resets global variables
     
     x = np.array([0])
@@ -115,14 +119,15 @@ def createGraph(currentFrame, xLabel, yLabel): # Subroutine called when new requ
     
     # Creates the placeholder graph
     
+    axes.cla()
+    axes.set_ylabel(yLabel)
+    axes.set_xlabel(xLabel)
     axes.scatter(x, y, marker = "+", color = "black", s = 100)
     
     axes.set_xlim([0, 10]) # Setting limits is visually for the graph. The current graph shows up to 10 on x and 10 on y
     axes.set_ylim([0, 10])
     
     canvas.draw() # Draws the graph
-    
-    return figure, axes, canvas # Returns figure, axes and canvas so the graph can be changed in the future
 
 def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString, derivedString, name): # Creates the frame where the user can enter data
     
@@ -147,12 +152,31 @@ def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, 
     # Creates the label (below the rows) that explains why an entry was rejected, e.g. ln of a non-positive value
     
     messageString = StringVar(master = dataFrame, value = "")
-    messageLabel = Label(master = dataFrame, width = 30, height = 1, bg = darkGrey, fg = darkRed, textvariable = messageString, font = ('Arial', 8), wraplength = 216)
+    messageLabel = Label(master = dataFrame, width = 24, height = 1, bg = darkGrey, fg = darkRed, textvariable = messageString, font = ('Arial', 8), wraplength = 170, anchor = W, justify = LEFT)
     messageLabel.place(x = 10, y = 475)
+    
+    # Creates the button (bottom right, next to the message) that removes every reading and resets the graph
+    
+    clearButton = Button(master = dataFrame, text = "Clear", font = ('Arial', 8), bg = lightRed, command = lambda: clearData(dataEntryFrame, axes, canvas, xAxis, yAxis, mode, gradientString, interceptString, messageString, derivedString, name))
+    clearButton.place(x = 226, y = 496, width = 44, height = 22, anchor = SE)
     
     # Creates the first data entry row (gridded at row 0)
     
     createEntryRow(dataEntryFrame, 0, axes, canvas, xAxis, yAxis, mode, gradientString, interceptString, messageString, derivedString, name)
+
+def clearData(entryListFrame, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name): # Removes every entry row and reading, resets the graph and info panel, and leaves one empty row
+    
+    for row in entryListFrame.winfo_children():
+        row.destroy()
+    
+    resetGraph(axes, canvas, xLabel, yLabel) # Also resets x, y and rowIndex
+    
+    gradientString.set("Unavailable")
+    interceptString.set("Unavailable")
+    derivedString.set("")
+    messageString.set("")
+    
+    createEntryRow(entryListFrame, 0, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name)
 
 def createEntryRow(entryListFrame, row, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name): # Creates one data-entry row (x entry, y entry, add/remove button) gridded at `row`
     
