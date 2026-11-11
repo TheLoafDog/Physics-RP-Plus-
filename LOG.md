@@ -43,3 +43,7 @@
 - `openRP` now takes `(xAxis, yAxis, ...)` in the order the sidebar passes them, and every RP dict's `xAxis`/`yAxis` are now the labels actually drawn on the x and y axes (values swapped in hashing.py and `RP info.txt`). Displayed graphs are unchanged.
 - Replaced the broken commented-out generator with `buildTable`/`writeTable` (`python3 hashing.py --write`); new tests check the dicts match the data file and that axis labels match each practical's transform mode.
 - py_compile, data check and pytest pass. Merged by Claude (autonomous run).
+
+## 2026-11-11 — point removal matches the (x, y) pair
+- `refreshGraph` now decides add vs remove from the row's button colour, remembers the reading each row added (`button.addedPoint`) and removes exactly that pair via new tkinter-free `points.remove_point` (tested). Removal no longer parses the entry boxes, so a row can be removed even if its text was edited or cleared.
+- Checked with pytest plus a headless stub-tkinter smoke run of add/remove. Merged by Claude (autonomous run).
