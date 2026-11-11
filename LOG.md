@@ -30,3 +30,7 @@
 ## 2026-11-11 — pytest harness
 - Added `tests/` (conftest adds the repo root to sys.path, `pytest.ini` sets testpaths): hashGet finds all 12 RPs with the expected fields, raises KeyError when missing, probes past collisions; transform_point covered for modes 0–3 and its error cases.
 - Noted: `RP info.txt` has 100 lines (97 slots + 3 trailing blanks); the test allows that. Merged by Claude (autonomous run).
+
+## 2026-11-11 — CI workflow
+- Added `.github/workflows/ci.yml`: Python 3.12, installs requirements + pytest, runs py_compile, `hashing.py` and pytest on push and pull_request.
+- Merged by Claude (autonomous run); the first Actions run happens on the merge commit itself, so check the Actions tab if it is red.

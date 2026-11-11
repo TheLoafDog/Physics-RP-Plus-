@@ -27,6 +27,7 @@ and y-intercept, alongside the original and linearised equations.
 - Data check: `python3 hashing.py` should print the RP11 dict.
 - Tests: `pip install pytest` then `python3 -m pytest -q` (tests live in `tests/`, tkinter-free, so they
   run headless). There is no linter yet.
+- CI: `.github/workflows/ci.yml` runs py_compile, `hashing.py` and pytest on every push and PR.
 - The cloud sandbox has no Tkinter, so GUI behaviour can't be run there; keep logic that needs
   testing in plain functions that don't import tkinter.
 
