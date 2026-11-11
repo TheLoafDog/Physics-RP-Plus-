@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import filedialog # Save-as dialogs for the export buttons
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigureCanvas
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,6 +22,7 @@ from transforms import transform_point, input_error_message # Linearises a readi
 from points import remove_point, axis_limits # Removes one (x, y) reading from the plotted arrays / picks axis limits that include negative values
 from fit import format_fit # Rounds the gradient and intercept to 3 s.f. and adds units worked out from the axis labels
 from derived import derived_text # Physical quantities read straight off the fit (e.g. RP6: E = intercept, r = -gradient)
+from export import write_csv, save_png, default_filename # Save the plotted readings as CSV / the graph as PNG
 
 
 # Global variables
@@ -315,7 +317,33 @@ def openRP(mainFrame, xAxis, yAxis, xEntryTitle, yEntryTitle, originalEquation, 
     
     createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString, derivedString, name)
     
+    createExportButtons(RPFrame, figure, xAxis, yAxis, name)
+    
     RPFrame.pack()
+
+def createExportButtons(RPFrame, figure, xLabel, yLabel, name): # Two buttons under the data-entry panel: save the graph as a PNG, or the plotted readings as a CSV
+    
+    exportFrame = Frame(master = RPFrame, width = 190, height = 178, bg = darkGrey, bd = 2, relief = "groove")
+    exportFrame.place(relx = 0, rely = 1, x = 10, y = -10, anchor = SW)
+    
+    exportTitle = Label(master = exportFrame, width = 12, height = 1, bg = darkGrey, text = "Export", font = ('Arial Bold', 10))
+    exportTitle.place(relx = 0.5, y = 10, anchor = N)
+    
+    savePNGButton = Button(master = exportFrame, width = 20, text = "Save graph as PNG", command = lambda: saveGraphPNG(figure, name))
+    saveCSVButton = Button(master = exportFrame, width = 20, text = "Save data as CSV", command = lambda: saveDataCSV(xLabel, yLabel, name))
+    
+    savePNGButton.place(relx = 0.5, y = 45, anchor = N)
+    saveCSVButton.place(relx = 0.5, y = 85, anchor = N)
+
+def saveGraphPNG(figure, name): # Asks where to save, then writes the current graph as a PNG (does nothing if the dialog is cancelled)
+    path = filedialog.asksaveasfilename(title = "Save graph as PNG", defaultextension = ".png", initialfile = default_filename(name, ".png"), filetypes = [("PNG image", "*.png")])
+    if path:
+        save_png(figure, path)
+
+def saveDataCSV(xLabel, yLabel, name): # Asks where to save, then writes the plotted (linearised) readings as a CSV with the axis labels as the header
+    path = filedialog.asksaveasfilename(title = "Save data as CSV", defaultextension = ".csv", initialfile = default_filename(name, ".csv"), filetypes = [("CSV file", "*.csv")])
+    if path:
+        write_csv(path, x, y, xLabel, yLabel)
 
 if __name__ == "__main__": # Only open the window when run directly, so the module can be imported (e.g. by tests)
     root = Tk()
