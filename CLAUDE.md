@@ -16,7 +16,8 @@ and y-intercept, alongside the original and linearised equations.
   missing). Resolves `RP info.txt` next to the script, so the app runs from any directory.
 - `hashing.py` — the source dicts for each RP plus the (commented-out) generator for `RP info.txt`;
   imports `hashGet` from `rp_data`.
-- Data-transform `mode`: 0 = none, 1 = x → 1/x, 2 = y → ln(y), 3 = x (degrees) → cos(x).
+- `transforms.py` — tkinter-free `transform_point(x, y, mode)` used by `refreshGraph`.
+  Data-transform `mode`: 0 = none, 1 = x → 1/x, 2 = y → ln(y), 3 = x (degrees) → cos(x).
 
 ## How to run and check
 - Install: `pip install matplotlib numpy` (Tkinter comes with most Python installs; on Debian/Ubuntu

@@ -21,3 +21,8 @@
 ## 2026-11-11 — __main__ guards
 - Main.py only creates Tk() and calls main() when run directly; hashing.py only prints its data check when run directly.
 - Running `python3 Main.py` behaves as before. Merged by Claude.
+
+## 2026-11-11 — transform_point
+- New tkinter-free `transforms.py` with `transform_point(x, y, mode)`; `refreshGraph` calls it instead of inlining the mode 0–3 maths.
+- Dropped the label-string mode re-detection in `refreshGraph` (it always matched the stored `mode` for every filled practical) so new rows keep the mode passed in.
+- Checked: py_compile, hashing.py data check, transform_point spot-checks for all four modes and error cases. Merged by Claude (autonomous run).

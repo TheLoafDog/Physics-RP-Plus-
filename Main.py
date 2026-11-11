@@ -2,7 +2,6 @@ from tkinter import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigureCanvas
 import matplotlib.pyplot as plt
 import numpy as np
-import math
 
 # Constants for colour
 
@@ -18,6 +17,7 @@ darkBlue = '#005969'
 requiredPracticalList = ["RP1 Stationary Waves on a String", "RP2 Interference Effects", "RP3 Determination of g", "RP4 Determination of Young's Modulus", "RP5 Determination of Resistivity of a Wire", "RP6 Internal resistance and emf", "RP7 Simple Harmonic Motion", "RP8 Boyle's Law", "RP9 Charging and Discharging Capacitors", "RP10 Magnetic Force on a Wire", "RP11 Magnetic Flux Linkage", "RP12 Inverse Square Law"]
 
 from rp_data import hashGet # Practical data lookup (shared with hashing.py)
+from transforms import transform_point # Linearises a reading according to the practical's mode
 
 
 # Global variables
@@ -164,15 +164,7 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
     # Tries to convert user input into numbers, if it cannot then it does nothing
     
     try:
-        newX = float(newX)
-        newY = float(newY)
-        if mode == 1: # If the mode is 1 (1 / x), set the new x value as 1 / x
-            newX = 1 / float(newX)
-        elif mode == 2:
-            newY = math.log(newY)
-        elif mode == 3:
-            radians = newX * ( math.pi / 180.0 )
-            newX = math.cos(radians)
+        newX, newY = transform_point(newX, newY, mode) # Mode 1 applies 1 / x, mode 2 ln(y), mode 3 cos(x) (see transforms.py)
     except:
         return ""
     
@@ -193,15 +185,6 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
             y = np.delete(y, indexY)
     elif len(x) == 1 and x[0] == 0: # If there is no other data (x only has one entry, 0) and data is added
         
-        mode = 0 # The mode is determined to see what operation is done to the entries. Mode 1, for example, applies 1 / x to the x entry
-        
-        if xLabel == "1 / Length (1 / m)": # Checks to see if mode 1 is applicable
-            mode = 1
-        elif yLabel == "ln(V)":
-            mode = 2
-        elif xLabel == "cos(θ)":
-            mode = 3
-        
         entryButton.config(bg = lightRed) # Changes the button colour to red, indicating that pressing it will remove the data entry
         x = np.array([newX]) # Replaces the x and y arrays with the new entry, since there is only one entry
         y = np.array([newY])
@@ -220,15 +203,6 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
     elif len(x) == 16: # If there are max entries, do nothing
         return ""
     else:
-        
-        mode = 0 # The mode is determined to see what operation is done to the entries. Mode 1, for example, applies 1 / x to the x entry
-        
-        if xLabel == "1 / Length (1 / m)": # Checks to see if mode 1 is applicable
-            mode = 1
-        elif yLabel == "ln(V)":
-            mode = 2
-        elif xLabel == "cos(θ)":
-            mode = 3
         
         # Does the exact same as previous condition, except appends the new values to the x and y arrays
         
