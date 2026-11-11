@@ -59,3 +59,7 @@
 ## 2026-11-11 — gradient and intercept rounded with units
 - The info panel now shows the fit as e.g. "-1.00 V / A" and "1.50 V" instead of raw floats: new tkinter-free `fit.format_fit` rounds to 3 s.f. (scientific notation for very large/small values) and takes units from the trailing "(unit)" of the axis labels; `ln(V)` and `cos(θ)` are treated as dimensionless, so RP9's gradient is in s⁻¹ and its intercept has no unit.
 - Tested in `tests/test_fit.py`; pytest plus a headless xvfb smoke run of RP6 pass. Merged by Claude (autonomous run).
+
+## 2026-11-11 — derived quantities from the fit
+- New `derived.py` lists, per practical, the quantities that come straight from the gradient/intercept: RP1 v = 2 × gradient; RP3 g = gradient, u = intercept / 2; RP6 E = intercept, r = −gradient; RP9 RC = −1 / gradient, V₀ = e^intercept. Shown on a new line under the gradient/intercept (blank for RP2/4/5/10/11, which need a separately measured A, s, n, N…). `openRP` now also receives the practical's name.
+- To fit the extra line without covering the graph, the four bold title labels in the info panel are height 1 instead of 2. pytest (`tests/test_derived.py`) plus a headless xvfb run of RP6 and RP9 (RC = 2.00 s, V₀ = 6.00 V from generated data) pass. Merged by Claude (autonomous run).

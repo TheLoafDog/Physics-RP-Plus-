@@ -20,6 +20,7 @@ from rp_data import hashGet # Practical data lookup (shared with hashing.py)
 from transforms import transform_point, input_error_message # Linearises a reading according to the practical's mode / explains why it can't
 from points import remove_point, axis_limits # Removes one (x, y) reading from the plotted arrays / picks axis limits that include negative values
 from fit import format_fit # Rounds the gradient and intercept to 3 s.f. and adds units worked out from the axis labels
+from derived import derived_text # Physical quantities read straight off the fit (e.g. RP6: E = intercept, r = -gradient)
 
 
 # Global variables
@@ -72,7 +73,7 @@ def main():
     
     for i in range(0,12):
         rp = hashGet(requiredPracticalList[i]) # Looked up once per button; the dict's xAxis/yAxis are the graph labels, the entry titles are the raw readings
-        newSideBarButton = Button(master = sideBarButtonFrame, width = 20, height = 2, bd = 2, relief = "raised", text = requiredPracticalList[i], wraplength = 125, command = lambda rp = rp: openRP(mainFrame, rp["xAxis"], rp["yAxis"], rp["xEntryTitle"], rp["yEntryTitle"], rp["originalEquation"], rp["linearisedEquation"], rp["mode"]))
+        newSideBarButton = Button(master = sideBarButtonFrame, width = 20, height = 2, bd = 2, relief = "raised", text = requiredPracticalList[i], wraplength = 125, command = lambda rp = rp: openRP(mainFrame, rp["xAxis"], rp["yAxis"], rp["xEntryTitle"], rp["yEntryTitle"], rp["originalEquation"], rp["linearisedEquation"], rp["mode"], rp["name"]))
         newSideBarButton.grid(row = i, column = 0, padx = 5, pady = 5)
     
     root.mainloop()
@@ -123,7 +124,7 @@ def createGraph(currentFrame, xLabel, yLabel): # Subroutine called when new requ
     
     return figure, axes, canvas # Returns figure, axes and canvas so the graph can be changed in the future
 
-def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString): # Creates the frame where the user can enter data
+def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString, derivedString, name): # Creates the frame where the user can enter data
     
     # Creates base frame
     
@@ -151,21 +152,21 @@ def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, 
     
     # Creates the first data entry row (gridded at row 0)
     
-    createEntryRow(dataEntryFrame, 0, axes, canvas, xAxis, yAxis, mode, gradientString, interceptString, messageString)
+    createEntryRow(dataEntryFrame, 0, axes, canvas, xAxis, yAxis, mode, gradientString, interceptString, messageString, derivedString, name)
 
-def createEntryRow(entryListFrame, row, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString): # Creates one data-entry row (x entry, y entry, add/remove button) gridded at `row`
+def createEntryRow(entryListFrame, row, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name): # Creates one data-entry row (x entry, y entry, add/remove button) gridded at `row`
     
     dataEntry = Frame(master = entryListFrame, width = 216, height = 20, bg = darkGrey)
     xEntry = Entry(master = dataEntry)
     yEntry = Entry(master = dataEntry)
     # The button will refresh the graph with the new entries (and turns red once the entry is added, so pressing it again removes it)
-    addButton = Button(master = dataEntry, height = 20, width = 20, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString, messageString))
+    addButton = Button(master = dataEntry, height = 20, width = 20, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name))
     xEntry.place(x = 0, y = 0, width = 90, height = 20)
     yEntry.place(x = 100, y = 0, width = 90, height = 20)
     addButton.place(x = 196, y = 0)
     dataEntry.grid(row = row, column = 0, pady = 3)
 
-def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString, messageString): # Refreshes the graph with the new data
+def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name): # Refreshes the graph with the new data
     
     # Retrieves global variables
     
@@ -205,7 +206,7 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         
         # Creates the next empty row for new entries
         
-        createEntryRow(entryListFrame, rowIndex, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString)
+        createEntryRow(entryListFrame, rowIndex, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name)
         rowIndex += 1 # Places it at the new row, and adds one to the row index
     elif len(x) == 16: # If there are max entries, do nothing
         messageString.set("Maximum of 16 readings reached")
@@ -219,13 +220,14 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         x = np.append(x, [newX])
         y = np.append(y, [newY])
         
-        createEntryRow(entryListFrame, rowIndex, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString)
+        createEntryRow(entryListFrame, rowIndex, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name)
         rowIndex += 1
     
     axes.scatter(x, y, marker = "+", color = "black", s = 100) # Displays the new updated graph
     
     gradientString.set("Unavailable") # Sets the string variables to unavailable, changes if they are available
     interceptString.set("Unavailable")
+    derivedString.set("")
     
     if len(x) > 1 and len(y) > 1: # Draws gradient and changes string variables if applicable
         gradient, intercept = np.polyfit(x, y, 1)
@@ -233,6 +235,7 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         gradientText, interceptText = format_fit(gradient, intercept, xLabel, yLabel) # e.g. "-1.00 V / A", "1.50 V"
         gradientString.set(gradientText)
         interceptString.set(interceptText)
+        derivedString.set(derived_text(name, gradient, intercept)) # e.g. RP6: E from the intercept, r from the gradient; blank for practicals without a direct quantity
         
     
     if len(x) == 1 and x[0] == 0: # If there is no entry, set the x and y limits to 10 as placeholder
@@ -244,7 +247,7 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
     
     canvas.draw() # Draw the canvas
     
-def openRP(mainFrame, xAxis, yAxis, xEntryTitle, yEntryTitle, originalEquation, linearisedEquation, mode): # xAxis / yAxis are the graph axis labels (already linearised, e.g. "1 / Length"); the entry titles describe the raw readings
+def openRP(mainFrame, xAxis, yAxis, xEntryTitle, yEntryTitle, originalEquation, linearisedEquation, mode, name = ""): # `name` is the practical's name, used to look up its derived quantities # xAxis / yAxis are the graph axis labels (already linearised, e.g. "1 / Length"); the entry titles describe the raw readings
     destroyFrames(mainFrame)
     
     RPFrame = Frame(master = mainFrame, width = 880, height = 720, bd = 2, relief = "groove")
@@ -256,18 +259,21 @@ def openRP(mainFrame, xAxis, yAxis, xEntryTitle, yEntryTitle, originalEquation, 
     
     gradientString = StringVar(master = rpInfoFrame, value = "Unavailable")
     interceptString = StringVar(master = rpInfoFrame, value = "Unavailable")
+    derivedString = StringVar(master = rpInfoFrame, value = "") # Quantities read off the fit, e.g. "E = 1.50 V,   r = 1.00 Ω" (blank for practicals without a direct one)
     
-    originalEquationTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "Original:", font = ('Arial Bold', 13), fg = darkRed)
+    originalEquationTitle = Label(master = rpInfoFrame, width = 27, height = 1, bg = darkGrey, bd = 0, text = "Original:", font = ('Arial Bold', 13), fg = darkRed)
     originalEquation = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = originalEquation, font = ('Arial', 14))
     
-    linearisedEquationTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "Linearised:", font = ('Arial Bold', 13), fg = darkGreen)
+    linearisedEquationTitle = Label(master = rpInfoFrame, width = 27, height = 1, bg = darkGrey, bd = 0, text = "Linearised:", font = ('Arial Bold', 13), fg = darkGreen)
     linearisedEquation = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = linearisedEquation, font = ('Arial', 14))
     
-    gradientTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "Gradient:", font = ('Arial Bold', 13), fg = darkBlue)
+    gradientTitle = Label(master = rpInfoFrame, width = 27, height = 1, bg = darkGrey, bd = 0, text = "Gradient:", font = ('Arial Bold', 13), fg = darkBlue)
     gradientLabel = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, textvariable = gradientString, font = ('Arial', 14))
     
-    interceptTitle = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, text = "y-intercept:", font = ('Arial Bold', 13), fg = darkBlue)
+    interceptTitle = Label(master = rpInfoFrame, width = 27, height = 1, bg = darkGrey, bd = 0, text = "y-intercept:", font = ('Arial Bold', 13), fg = darkBlue)
     interceptLabel = Label(master = rpInfoFrame, width = 27, height = 2, bg = darkGrey, bd = 0, textvariable = interceptString, font = ('Arial', 14))
+    
+    derivedLabel = Label(master = rpInfoFrame, width = 54, height = 1, bg = darkGrey, bd = 0, textvariable = derivedString, font = ('Arial', 12), fg = darkBlue)
     
     originalEquationTitle.grid(row = 0, column = 0)
     linearisedEquationTitle.grid(row = 0, column = 1)
@@ -281,7 +287,9 @@ def openRP(mainFrame, xAxis, yAxis, xEntryTitle, yEntryTitle, originalEquation, 
     gradientLabel.grid(row = 3, column = 0)
     interceptLabel.grid(row = 3, column = 1)
     
-    createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString)
+    derivedLabel.grid(row = 4, column = 0, columnspan = 2)
+    
+    createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString, derivedString, name)
     
     RPFrame.pack()
 
