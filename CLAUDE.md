@@ -24,6 +24,8 @@ and y-intercept, alongside the original and linearised equations.
   Data-transform `mode`: 0 = none, 1 = x → 1/x, 2 = y → ln(y), 3 = x (degrees) → cos(x).
 - `fit.py` — tkinter-free `format_fit(gradient, intercept, xLabel, yLabel)` → the two info-panel strings: 3 s.f. with units
   taken from the trailing " (unit)" of each axis label (gradient = y unit / x unit; `ln(V)`/`cos(θ)` count as dimensionless).
+- `derived.py` — tkinter-free table `DERIVED[name]` of (symbol, f(gradient, intercept), unit) for practicals whose linearised
+  equation gives a quantity directly (RP1 v, RP3 g/u, RP6 E/r, RP9 RC/V₀); `derived_text(name, g, c)` is the info-panel line.
 
 ## How to run and check
 - Install: `pip install matplotlib numpy` (Tkinter comes with most Python installs; on Debian/Ubuntu

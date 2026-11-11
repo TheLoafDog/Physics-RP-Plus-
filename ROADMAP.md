@@ -23,7 +23,7 @@ Items tagged [needs Brandon] are skipped by unattended runs.
 - [ ] [needs Brandon] Fill in RP12 (Inverse Square Law): confirm the graph (e.g. 1/√C against d, or C against 1/d²) and the transform mode needed.
 - [ ] [needs Brandon] Check RP3's "original equation" text: it reads `s = ut + 1/2(at)²`, but the standard SUVAT form is `s = ut + ½at²`.
 - [x] Show gradient and intercept rounded to sensible significant figures, with units derived from the axis labels where possible.
-- [ ] Show the physical quantity derived from the gradient/intercept for practicals where it's direct (e.g. RP6: E = intercept, r = −gradient; RP9: RC = −1/gradient).
+- [x] Show the physical quantity derived from the gradient/intercept for practicals where it's direct (e.g. RP6: E = intercept, r = −gradient; RP9: RC = −1/gradient).
 - [ ] Add a "Clear data" button that resets the current practical's points.
 - [ ] Export: save the current graph as PNG and the entered data as CSV.
 - [ ] Import data from a CSV file into the current practical.
