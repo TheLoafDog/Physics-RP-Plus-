@@ -8,3 +8,7 @@
 ## 2026-11-11 — README
 - README now covers what the app does, requirements, install/run and how to use it.
 - Docs only. Merged by Claude (interactive session with Brandon).
+
+## 2026-11-11 — requirements.txt + .gitignore
+- Added requirements.txt (matplotlib, numpy) and a Python .gitignore; README install step now uses requirements.txt.
+- Merged by Claude (interactive session with Brandon).
