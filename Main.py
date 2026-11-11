@@ -3,7 +3,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigureCanvas
 import matplotlib.pyplot as plt
 import numpy as np
 import math
-import ast
 
 # Constants for colour
 
@@ -18,23 +17,7 @@ darkBlue = '#005969'
 
 requiredPracticalList = ["RP1 Stationary Waves on a String", "RP2 Interference Effects", "RP3 Determination of g", "RP4 Determination of Young's Modulus", "RP5 Determination of Resistivity of a Wire", "RP6 Internal resistance and emf", "RP7 Simple Harmonic Motion", "RP8 Boyle's Law", "RP9 Charging and Discharging Capacitors", "RP10 Magnetic Force on a Wire", "RP11 Magnetic Flux Linkage", "RP12 Inverse Square Law"]
 
-database=open("RP info.txt", "r", encoding="utf-8")
-RP_dicts = database.readlines()
-
-def hashGet(key):
-    
-    #hash function
-    
-    hash_val = 0
-    
-    for letter in key:
-        hash_val += ord(letter)
-    hash_val = hash_val % 97
-    
-    while ast.literal_eval(RP_dicts[hash_val][:-1])["name"] != key:
-        hash_val += 1
-        
-    return ast.literal_eval(RP_dicts[hash_val][:-1])
+from rp_data import hashGet # Practical data lookup (shared with hashing.py)
 
 
 # Global variables

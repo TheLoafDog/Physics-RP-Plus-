@@ -150,23 +150,7 @@ requiredPracticalList.append(RP12)
 #database.close()
 #####################################
 
-database=open("RP info.txt", "r", encoding="utf-8")
-RP_dicts = database.readlines()
-
-def hashGet(key):
-    
-    #hash function
-    
-    hash_val = 0
-    
-    for letter in key:
-        hash_val += ord(letter)
-    hash_val = hash_val % 97
-    
-    while ast.literal_eval(RP_dicts[hash_val][:-1])["name"] != key:
-        hash_val += 1
-        
-    return ast.literal_eval(RP_dicts[hash_val][:-1])
+from rp_data import hashGet # Shared lookup, also used by Main.py
 
 print(hashGet("RP11 Magnetic Flux Linkage"))
     

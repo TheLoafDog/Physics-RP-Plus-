@@ -12,3 +12,8 @@
 ## 2026-11-11 — requirements.txt + .gitignore
 - Added requirements.txt (matplotlib, numpy) and a Python .gitignore; README install step now uses requirements.txt.
 - Merged by Claude (interactive session with Brandon).
+
+## 2026-11-11 — rp_data module
+- New tkinter-free `rp_data.py` (hashKey, loadTable, hashGet); Main.py and hashing.py both import it, duplicate hashGet removed.
+- `RP info.txt` now resolved next to the script, so the app runs from any directory; a missing name raises KeyError instead of looping/crashing.
+- Checked: py_compile, all 12 practical names resolve, hashing.py prints RP11 from another directory. Merged by Claude.
