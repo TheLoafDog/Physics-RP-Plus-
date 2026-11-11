@@ -18,7 +18,7 @@ requiredPracticalList = ["RP1 Stationary Waves on a String", "RP2 Interference E
 
 from rp_data import hashGet # Practical data lookup (shared with hashing.py)
 from transforms import transform_point, input_error_message # Linearises a reading according to the practical's mode / explains why it can't
-from points import remove_point # Removes one (x, y) reading from the plotted arrays
+from points import remove_point, axis_limits # Removes one (x, y) reading from the plotted arrays / picks axis limits that include negative values
 
 
 # Global variables
@@ -236,9 +236,9 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
     if len(x) == 1 and x[0] == 0: # If there is no entry, set the x and y limits to 10 as placeholder
         axes.set_xlim([0, 10])
         axes.set_ylim([0, 10])
-    else: # Otherwise set the x and y limits to 1.1x the largest values
-        axes.set_xlim([0, np.max(x) * 1.1])
-        axes.set_ylim([0, np.max(y) * 1.1])
+    else: # Otherwise pad the limits by 10%, always including 0 and extending below it when there are negative values (e.g. ln(V) in RP9)
+        axes.set_xlim(axis_limits(x))
+        axes.set_ylim(axis_limits(y))
     
     canvas.draw() # Draw the canvas
     
