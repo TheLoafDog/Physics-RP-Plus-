@@ -22,6 +22,8 @@ and y-intercept, alongside the original and linearised equations.
 - `transforms.py` — tkinter-free `transform_point(x, y, mode)` used by `refreshGraph`, and `input_error_message(x, y, mode)`
   which gives the short red message shown under the entry rows when a reading is rejected.
   Data-transform `mode`: 0 = none, 1 = x → 1/x, 2 = y → ln(y), 3 = x (degrees) → cos(x).
+- `fit.py` — tkinter-free `format_fit(gradient, intercept, xLabel, yLabel)` → the two info-panel strings: 3 s.f. with units
+  taken from the trailing " (unit)" of each axis label (gradient = y unit / x unit; `ln(V)`/`cos(θ)` count as dimensionless).
 
 ## How to run and check
 - Install: `pip install matplotlib numpy` (Tkinter comes with most Python installs; on Debian/Ubuntu
