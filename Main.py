@@ -18,6 +18,7 @@ requiredPracticalList = ["RP1 Stationary Waves on a String", "RP2 Interference E
 
 from rp_data import hashGet # Practical data lookup (shared with hashing.py)
 from transforms import transform_point # Linearises a reading according to the practical's mode
+from points import remove_point # Removes one (x, y) reading from the plotted arrays
 
 
 # Global variables
@@ -165,31 +166,30 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
     global y
     global rowIndex
     
-    # Tries to convert user input into numbers, if it cannot then it does nothing
+    removing = entryButton.cget("bg") == lightRed # A red button belongs to a row that has been added, so pressing it removes that reading
     
-    try:
-        newX, newY = transform_point(newX, newY, mode) # Mode 1 applies 1 / x, mode 2 ln(y), mode 3 cos(x) (see transforms.py)
-    except:
-        return ""
+    if not removing: # Tries to convert user input into numbers, if it cannot then it does nothing
+        try:
+            newX, newY = transform_point(newX, newY, mode) # Mode 1 applies 1 / x, mode 2 ln(y), mode 3 cos(x) (see transforms.py)
+        except:
+            return ""
     
     axes.cla() # Clears current axes
     
     axes.set_ylabel(yLabel) # Re-adds current labels
     axes.set_xlabel(xLabel)
     
-    if newX in x and newY in y: # Checks to see if the data exists already (If it exists then a delete button was likely pressed, so it will treat it as a removal)
+    if removing:
         entryFrame.destroy() # Deletes the entry frame as it was removed
         if len(x) == 1: # If it is the only entry, it resets the graph
             x = np.array([0])
             y = np.array([0])
-        else: # Otherwise it just deletes the entry
-            indexX = np.where(x == newX)[0][0]
-            indexY = np.where(y == newY)[0][0]
-            x = np.delete(x, indexX)
-            y = np.delete(y, indexY)
+        else: # Otherwise it removes the (x, y) pair that this row added (remembered on the button, so editing the boxes afterwards can't remove the wrong reading)
+            x, y = remove_point(x, y, *entryButton.addedPoint)
     elif len(x) == 1 and x[0] == 0: # If there is no other data (x only has one entry, 0) and data is added
         
         entryButton.config(bg = lightRed) # Changes the button colour to red, indicating that pressing it will remove the data entry
+        entryButton.addedPoint = (newX, newY) # Remembers which reading this row added, so removal matches the pair exactly
         x = np.array([newX]) # Replaces the x and y arrays with the new entry, since there is only one entry
         y = np.array([newY])
         
@@ -204,6 +204,7 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         # Does the exact same as previous condition, except appends the new values to the x and y arrays
         
         entryButton.config(bg = lightRed)
+        entryButton.addedPoint = (newX, newY)
         x = np.append(x, [newX])
         y = np.append(y, [newY])
         

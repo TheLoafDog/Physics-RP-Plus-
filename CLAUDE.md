@@ -17,6 +17,7 @@ and y-intercept, alongside the original and linearised equations.
 - `hashing.py` — the source dicts for each RP (the source of truth: `xAxis`/`yAxis` are the plotted, linearised
   graph labels; `xEntryTitle`/`yEntryTitle` describe the raw readings). `python3 hashing.py --write` regenerates
   `RP info.txt` from them (CRLF line endings) — edit the dicts, then regenerate; don't hand-edit the .txt.
+- `points.py` — tkinter-free `find_point` / `remove_point` for the parallel `x`, `y` arrays of plotted readings.
 - `transforms.py` — tkinter-free `transform_point(x, y, mode)` used by `refreshGraph`.
   Data-transform `mode`: 0 = none, 1 = x → 1/x, 2 = y → ln(y), 3 = x (degrees) → cos(x).
 
