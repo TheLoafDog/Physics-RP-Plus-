@@ -25,8 +25,8 @@ and y-intercept, alongside the original and linearised equations.
 - Run: `python3 Main.py` (works from any directory).
 - Syntax check (works headless, no Tk needed): `python3 -m py_compile *.py`
 - Data check: `python3 hashing.py` should print the RP11 dict.
-- There is no test suite or linter yet (see ROADMAP Phase 1). Once `pytest` tests exist, run
-  `python3 -m pytest -q` as well.
+- Tests: `pip install pytest` then `python3 -m pytest -q` (tests live in `tests/`, tkinter-free, so they
+  run headless). There is no linter yet.
 - The cloud sandbox has no Tkinter, so GUI behaviour can't be run there; keep logic that needs
   testing in plain functions that don't import tkinter.
 

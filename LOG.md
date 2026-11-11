@@ -26,3 +26,7 @@
 - New tkinter-free `transforms.py` with `transform_point(x, y, mode)`; `refreshGraph` calls it instead of inlining the mode 0–3 maths.
 - Dropped the label-string mode re-detection in `refreshGraph` (it always matched the stored `mode` for every filled practical) so new rows keep the mode passed in.
 - Checked: py_compile, hashing.py data check, transform_point spot-checks for all four modes and error cases. Merged by Claude (autonomous run).
+
+## 2026-11-11 — pytest harness
+- Added `tests/` (conftest adds the repo root to sys.path, `pytest.ini` sets testpaths): hashGet finds all 12 RPs with the expected fields, raises KeyError when missing, probes past collisions; transform_point covered for modes 0–3 and its error cases.
+- Noted: `RP info.txt` has 100 lines (97 slots + 3 trailing blanks); the test allows that. Merged by Claude (autonomous run).

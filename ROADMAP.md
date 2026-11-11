@@ -9,7 +9,7 @@ Items tagged [needs Brandon] are skipped by unattended runs.
 - [x] Move practical data and `hashGet` into a tkinter-free module (e.g. `rp_data.py`) used by both `Main.py` and `hashing.py`, removing the duplicated `hashGet`; resolve `RP info.txt` relative to the script file so the app runs from any directory.
 - [x] Guard the app start-up with `if __name__ == "__main__":` so modules can be imported without opening a window.
 - [x] Move the data-transform logic (`mode` 0–3) into a pure function (e.g. `transform_point(x, y, mode)`) and drop the label-string mode re-detection inside `refreshGraph`.
-- [ ] Add a pytest harness with tests for `hashGet` (all 12 RPs found) and the transform function.
+- [x] Add a pytest harness with tests for `hashGet` (all 12 RPs found) and the transform function.
 - [ ] Add a GitHub Actions workflow running `py_compile` and `pytest` on push/PR.
 - [ ] Remove the duplicated "create new entry row" code in `refreshGraph` (three near-identical blocks) into one helper.
 - [ ] Untangle the x/y naming: `openRP(mainFrame, yAxis, xAxis, ...)` receives `xAxis` as `yAxis`, and the RP dicts' `xAxis`/`yAxis` fields are swapped relative to the entry titles. Make the field names mean what they say without changing what's displayed.
