@@ -47,3 +47,7 @@
 ## 2026-11-11 — point removal matches the (x, y) pair
 - `refreshGraph` now decides add vs remove from the row's button colour, remembers the reading each row added (`button.addedPoint`) and removes exactly that pair via new tkinter-free `points.remove_point` (tested). Removal no longer parses the entry boxes, so a row can be removed even if its text was edited or cleared.
 - Checked with pytest plus a headless stub-tkinter smoke run of add/remove. Merged by Claude (autonomous run).
+
+## 2026-11-11 — input error messages
+- `refreshGraph` catches only `ValueError` / `ZeroDivisionError` from `transform_point` and shows a short red message under the entry rows (new `messageString` label in `createDataEntryFrame`): blank or non-numeric box, 1 / 0, ln of a non-positive value, or the 16-reading limit. Cleared on the next valid click.
+- Message text comes from tkinter-free `transforms.input_error_message` (tested). pytest + headless smoke run pass. Merged by Claude (autonomous run).

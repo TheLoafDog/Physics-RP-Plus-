@@ -31,3 +31,24 @@ def transform_point(x, y, mode):
     elif mode == MODE_COS_X:
         x = math.cos(math.radians(x))
     return x, y
+
+
+def input_error_message(x, y, mode):
+    """Return a short message saying why transform_point(x, y, mode) would fail, or "" if it wouldn't.
+
+    Used by the app to tell the user what to fix instead of silently ignoring the click.
+    """
+    for label, value in (("x", x), ("y", y)):
+        if str(value).strip() == "":
+            return f"Enter a value for {label}"
+        try:
+            float(value)
+        except ValueError:
+            return f"{label} must be a number, not '{value}'"
+    x = float(x)
+    y = float(y)
+    if mode == MODE_RECIPROCAL_X and x == 0:
+        return "x must not be 0 (the graph plots 1 / x)"
+    if mode == MODE_LN_Y and y <= 0:
+        return "y must be positive (the graph plots ln(y))"
+    return ""

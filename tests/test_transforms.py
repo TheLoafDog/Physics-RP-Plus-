@@ -40,3 +40,29 @@ def test_reciprocal_of_zero_raises():
 def test_ln_of_non_positive_raises(y):
     with pytest.raises(ValueError):
         transform_point(1, y, 2)
+
+
+from transforms import input_error_message
+
+
+@pytest.mark.parametrize("x, y, mode, expected", [
+    ("1", "2", 0, ""),
+    ("", "2", 0, "Enter a value for x"),
+    ("1", " ", 0, "Enter a value for y"),
+    ("abc", "2", 0, "x must be a number, not 'abc'"),
+    ("1", "two", 0, "y must be a number, not 'two'"),
+    ("0", "2", 1, "x must not be 0 (the graph plots 1 / x)"),
+    ("1", "0", 2, "y must be positive (the graph plots ln(y))"),
+    ("1", "-3", 2, "y must be positive (the graph plots ln(y))"),
+    ("0", "2", 0, ""),
+    ("1", "0", 3, ""),
+])
+def test_input_error_message(x, y, mode, expected):
+    assert input_error_message(x, y, mode) == expected
+
+
+@pytest.mark.parametrize("x, y, mode", [("", "1", 0), ("a", "1", 0), ("0", "1", 1), ("1", "0", 2), ("1", "-1", 2)])
+def test_message_is_non_empty_exactly_when_transform_point_raises(x, y, mode):
+    with pytest.raises((ValueError, ZeroDivisionError)):
+        transform_point(x, y, mode)
+    assert input_error_message(x, y, mode) != ""

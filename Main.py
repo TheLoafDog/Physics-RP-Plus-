@@ -17,7 +17,7 @@ darkBlue = '#005969'
 requiredPracticalList = ["RP1 Stationary Waves on a String", "RP2 Interference Effects", "RP3 Determination of g", "RP4 Determination of Young's Modulus", "RP5 Determination of Resistivity of a Wire", "RP6 Internal resistance and emf", "RP7 Simple Harmonic Motion", "RP8 Boyle's Law", "RP9 Charging and Discharging Capacitors", "RP10 Magnetic Force on a Wire", "RP11 Magnetic Flux Linkage", "RP12 Inverse Square Law"]
 
 from rp_data import hashGet # Practical data lookup (shared with hashing.py)
-from transforms import transform_point # Linearises a reading according to the practical's mode
+from transforms import transform_point, input_error_message # Linearises a reading according to the practical's mode / explains why it can't
 from points import remove_point # Removes one (x, y) reading from the plotted arrays
 
 
@@ -142,23 +142,29 @@ def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, 
     dataEntryFrame = Frame(master = dataFrame, width = 216, height = 430, bg = darkGrey)
     dataEntryFrame.place(x = 10, y = 40)
     
+    # Creates the label (below the rows) that explains why an entry was rejected, e.g. ln of a non-positive value
+    
+    messageString = StringVar(master = dataFrame, value = "")
+    messageLabel = Label(master = dataFrame, width = 30, height = 1, bg = darkGrey, fg = darkRed, textvariable = messageString, font = ('Arial', 8), wraplength = 216)
+    messageLabel.place(x = 10, y = 475)
+    
     # Creates the first data entry row (gridded at row 0)
     
-    createEntryRow(dataEntryFrame, 0, axes, canvas, xAxis, yAxis, mode, gradientString, interceptString)
+    createEntryRow(dataEntryFrame, 0, axes, canvas, xAxis, yAxis, mode, gradientString, interceptString, messageString)
 
-def createEntryRow(entryListFrame, row, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString): # Creates one data-entry row (x entry, y entry, add/remove button) gridded at `row`
+def createEntryRow(entryListFrame, row, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString): # Creates one data-entry row (x entry, y entry, add/remove button) gridded at `row`
     
     dataEntry = Frame(master = entryListFrame, width = 216, height = 20, bg = darkGrey)
     xEntry = Entry(master = dataEntry)
     yEntry = Entry(master = dataEntry)
     # The button will refresh the graph with the new entries (and turns red once the entry is added, so pressing it again removes it)
-    addButton = Button(master = dataEntry, height = 20, width = 20, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString))
+    addButton = Button(master = dataEntry, height = 20, width = 20, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString, messageString))
     xEntry.place(x = 0, y = 0, width = 90, height = 20)
     yEntry.place(x = 100, y = 0, width = 90, height = 20)
     addButton.place(x = 196, y = 0)
     dataEntry.grid(row = row, column = 0, pady = 3)
 
-def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString): # Refreshes the graph with the new data
+def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString, messageString): # Refreshes the graph with the new data
     
     # Retrieves global variables
     
@@ -168,11 +174,14 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
     
     removing = entryButton.cget("bg") == lightRed # A red button belongs to a row that has been added, so pressing it removes that reading
     
-    if not removing: # Tries to convert user input into numbers, if it cannot then it does nothing
+    if not removing: # Tries to convert user input into numbers; if it cannot, it shows why and leaves the graph alone
         try:
             newX, newY = transform_point(newX, newY, mode) # Mode 1 applies 1 / x, mode 2 ln(y), mode 3 cos(x) (see transforms.py)
-        except:
+        except (ValueError, ZeroDivisionError): # Non-numeric text, 1 / 0, or ln of a non-positive value
+            messageString.set(input_error_message(newX, newY, mode))
             return ""
+    
+    messageString.set("") # The last click was valid, so clear any earlier message
     
     axes.cla() # Clears current axes
     
@@ -195,9 +204,10 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         
         # Creates the next empty row for new entries
         
-        createEntryRow(entryListFrame, rowIndex, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString)
+        createEntryRow(entryListFrame, rowIndex, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString)
         rowIndex += 1 # Places it at the new row, and adds one to the row index
     elif len(x) == 16: # If there are max entries, do nothing
+        messageString.set("Maximum of 16 readings reached")
         return ""
     else:
         
@@ -208,7 +218,7 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         x = np.append(x, [newX])
         y = np.append(y, [newY])
         
-        createEntryRow(entryListFrame, rowIndex, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString)
+        createEntryRow(entryListFrame, rowIndex, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString)
         rowIndex += 1
     
     axes.scatter(x, y, marker = "+", color = "black", s = 100) # Displays the new updated graph
