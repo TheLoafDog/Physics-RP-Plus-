@@ -63,3 +63,7 @@
 ## 2026-11-11 — derived quantities from the fit
 - New `derived.py` lists, per practical, the quantities that come straight from the gradient/intercept: RP1 v = 2 × gradient; RP3 g = gradient, u = intercept / 2; RP6 E = intercept, r = −gradient; RP9 RC = −1 / gradient, V₀ = e^intercept. Shown on a new line under the gradient/intercept (blank for RP2/4/5/10/11, which need a separately measured A, s, n, N…). `openRP` now also receives the practical's name.
 - To fit the extra line without covering the graph, the four bold title labels in the info panel are height 1 instead of 2. pytest (`tests/test_derived.py`) plus a headless xvfb run of RP6 and RP9 (RC = 2.00 s, V₀ = 6.00 V from generated data) pass. Merged by Claude (autonomous run).
+
+## 2026-11-11 — Clear button
+- A red "Clear" button at the bottom right of the data-entry panel (next to the error message, which is now left-aligned and a little narrower) destroys every entry row, resets `x`/`y`/`rowIndex`, redraws the placeholder graph, sets the gradient/intercept back to "Unavailable" and leaves one empty row.
+- The placeholder-graph reset moved out of `createGraph` into `resetGraph`, shared with `clearData`. pytest plus a headless xvfb run (add 3 readings, clear, add again) pass. Merged by Claude (autonomous run).
