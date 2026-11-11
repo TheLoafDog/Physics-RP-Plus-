@@ -17,3 +17,7 @@
 - New tkinter-free `rp_data.py` (hashKey, loadTable, hashGet); Main.py and hashing.py both import it, duplicate hashGet removed.
 - `RP info.txt` now resolved next to the script, so the app runs from any directory; a missing name raises KeyError instead of looping/crashing.
 - Checked: py_compile, all 12 practical names resolve, hashing.py prints RP11 from another directory. Merged by Claude.
+
+## 2026-11-11 — __main__ guards
+- Main.py only creates Tk() and calls main() when run directly; hashing.py only prints its data check when run directly.
+- Running `python3 Main.py` behaves as before. Merged by Claude.

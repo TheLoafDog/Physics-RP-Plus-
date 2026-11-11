@@ -308,5 +308,6 @@ def openRP(mainFrame, yAxis, xAxis, xEntryTitle, yEntryTitle, originalEquation, 
     
     RPFrame.pack()
 
-root = Tk()
-main()
+if __name__ == "__main__": # Only open the window when run directly, so the module can be imported (e.g. by tests)
+    root = Tk()
+    main()

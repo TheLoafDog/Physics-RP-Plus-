@@ -152,5 +152,6 @@ requiredPracticalList.append(RP12)
 
 from rp_data import hashGet # Shared lookup, also used by Main.py
 
-print(hashGet("RP11 Magnetic Flux Linkage"))
+if __name__ == "__main__": # Quick data check when run directly
+    print(hashGet("RP11 Magnetic Flux Linkage"))
     

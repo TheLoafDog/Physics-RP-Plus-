@@ -8,8 +8,8 @@ and y-intercept, alongside the original and linearised equations.
 
 ## Stack and layout
 - Python 3 + Tkinter (GUI), matplotlib (embedded via `FigureCanvasTkAgg`), numpy (`polyfit`).
-- `Main.py` — the whole app: sidebar, graph, data-entry rows, `refreshGraph`, `openRP`. Runs `Tk()`
-  and `main()` at import time.
+- `Main.py` — the whole app: sidebar, graph, data-entry rows, `refreshGraph`, `openRP`. Creates `Tk()`
+  and calls `main()` only under `if __name__ == "__main__":`, so it can be imported without a window.
 - `RP info.txt` — the practical "database": one Python dict literal per line, stored in a
   97-slot table at index `sum(ord(c) for c in name) % 97` (linear probing).
 - `rp_data.py` — tkinter-free loader: `hashKey`, `loadTable`, `hashGet(name)` (raises KeyError if
