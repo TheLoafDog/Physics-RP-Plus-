@@ -14,8 +14,9 @@ and y-intercept, alongside the original and linearised equations.
   97-slot table at index `sum(ord(c) for c in name) % 97` (linear probing).
 - `rp_data.py` — tkinter-free loader: `hashKey`, `loadTable`, `hashGet(name)` (raises KeyError if
   missing). Resolves `RP info.txt` next to the script, so the app runs from any directory.
-- `hashing.py` — the source dicts for each RP plus the (commented-out) generator for `RP info.txt`;
-  imports `hashGet` from `rp_data`.
+- `hashing.py` — the source dicts for each RP (the source of truth: `xAxis`/`yAxis` are the plotted, linearised
+  graph labels; `xEntryTitle`/`yEntryTitle` describe the raw readings). `python3 hashing.py --write` regenerates
+  `RP info.txt` from them (CRLF line endings) — edit the dicts, then regenerate; don't hand-edit the .txt.
 - `transforms.py` — tkinter-free `transform_point(x, y, mode)` used by `refreshGraph`.
   Data-transform `mode`: 0 = none, 1 = x → 1/x, 2 = y → ln(y), 3 = x (degrees) → cos(x).
 
