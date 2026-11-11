@@ -11,16 +11,18 @@ and y-intercept, alongside the original and linearised equations.
 - `Main.py` — the whole app: sidebar, graph, data-entry rows, `refreshGraph`, `openRP`. Runs `Tk()`
   and `main()` at import time.
 - `RP info.txt` — the practical "database": one Python dict literal per line, stored in a
-  97-slot table at index `sum(ord(c) for c in name) % 97` (linear probing). Read by `hashGet`.
-- `hashing.py` — the source dicts for each RP plus the (commented-out) generator for `RP info.txt`,
-  and a duplicate of `hashGet`.
+  97-slot table at index `sum(ord(c) for c in name) % 97` (linear probing).
+- `rp_data.py` — tkinter-free loader: `hashKey`, `loadTable`, `hashGet(name)` (raises KeyError if
+  missing). Resolves `RP info.txt` next to the script, so the app runs from any directory.
+- `hashing.py` — the source dicts for each RP plus the (commented-out) generator for `RP info.txt`;
+  imports `hashGet` from `rp_data`.
 - Data-transform `mode`: 0 = none, 1 = x → 1/x, 2 = y → ln(y), 3 = x (degrees) → cos(x).
 
 ## How to run and check
 - Install: `pip install matplotlib numpy` (Tkinter comes with most Python installs; on Debian/Ubuntu
   `apt install python3-tk`).
-- Run: `python3 Main.py` from the repo root (it opens `RP info.txt` by relative path).
-- Syntax check (works headless, no Tk needed): `python3 -m py_compile Main.py hashing.py`
+- Run: `python3 Main.py` (works from any directory).
+- Syntax check (works headless, no Tk needed): `python3 -m py_compile *.py`
 - Data check: `python3 hashing.py` should print the RP11 dict.
 - There is no test suite or linter yet (see ROADMAP Phase 1). Once `pytest` tests exist, run
   `python3 -m pytest -q` as well.

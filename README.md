@@ -16,7 +16,6 @@ gradient and y-intercept alongside the original and linearised equations for tha
 pip install -r requirements.txt
 python3 Main.py
 ```
-Run it from the repository folder, since it reads `RP info.txt` by relative path.
 
 ## How to use
 1. Click a practical in the sidebar.
