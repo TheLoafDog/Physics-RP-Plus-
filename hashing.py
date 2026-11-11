@@ -1,12 +1,11 @@
-import ast
-
-empty_list = [""] * 100
+import sys
+from rp_data import DATA_FILE, TABLE_SIZE, hashGet, hashKey # Shared lookup, also used by Main.py
 
 requiredPracticalList = []
 
 RP1 = {"name": "RP1 Stationary Waves on a String",
-       "yAxis": "1 / Length (1 / m)",
-       "xAxis": "Frequency (Hz)",
+       "yAxis": "Frequency (Hz)",
+       "xAxis": "1 / Length (1 / m)",
        "xEntryTitle": "Length (m)",
        "yEntryTitle": "Frequency (Hz)",
        "originalEquation": "λ = 2L",
@@ -14,8 +13,8 @@ RP1 = {"name": "RP1 Stationary Waves on a String",
        "mode": 1
        }
 RP2 = {"name": "RP2 Interference Effects",
-       "yAxis": "Distance from slit to screen (m)",
-       "xAxis": "Distance between each fringe (m)",
+       "yAxis": "Distance between each fringe (m)",
+       "xAxis": "Distance from slit to screen (m)",
        "xEntryTitle": "Slit screen distance (m)",
        "yEntryTitle": "Fringe spacing (m)",
        "originalEquation": "w = λD/s",
@@ -23,8 +22,8 @@ RP2 = {"name": "RP2 Interference Effects",
        "mode": 0
        }
 RP3 = {"name": "RP3 Determination of g",
-       "yAxis": "Time (s)",
-       "xAxis": "Height x 2 / Time (m/s)",
+       "yAxis": "Height x 2 / Time (m/s)",
+       "xAxis": "Time (s)",
        "xEntryTitle": "Time (s)",
        "yEntryTitle": "2h/t (m/s)",
        "originalEquation": "s = ut + 1/2(at)²",
@@ -32,8 +31,8 @@ RP3 = {"name": "RP3 Determination of g",
        "mode": 0
        }
 RP4 = {'name': "RP4 Determination of Young's Modulus",
-       'yAxis': 'Change in length (m)',
-       'xAxis': 'Force (N)',
+       'yAxis': 'Force (N)',
+       'xAxis': 'Change in length (m)',
        'xEntryTitle': 'ΔL (m)',
        'yEntryTitle': 'Force (N)',
        'originalEquation': 'E = σ / ε',
@@ -41,8 +40,8 @@ RP4 = {'name': "RP4 Determination of Young's Modulus",
        'mode': 0
        }
 RP5 = {"name": "RP5 Determination of Resistivity of a Wire",
-       "yAxis": "Length of wire (m)",
-       "xAxis": "Resistance (Ω)",
+       "yAxis": "Resistance (Ω)",
+       "xAxis": "Length of wire (m)",
        "xEntryTitle": "Length (m)",
        "yEntryTitle": "Resistance (Ω)",
        "originalEquation": "ρ = RA/L",
@@ -50,8 +49,8 @@ RP5 = {"name": "RP5 Determination of Resistivity of a Wire",
        "mode": 0
        }
 RP6 = {"name": "RP6 Internal resistance and emf",
-       "yAxis": "Current (A)",
-       "xAxis": "Voltage (V)",
+       "yAxis": "Voltage (V)",
+       "xAxis": "Current (A)",
        "xEntryTitle": "Current (A)",
        "yEntryTitle": "Voltage (V)",
        "originalEquation": "E = I(R + r)",
@@ -77,8 +76,8 @@ RP8 = {"name": "RP8 Boyle's Law",
        "mode": 0
        }
 RP9 = {"name": "RP9 Charging and Discharging Capacitors",
-       "yAxis": "Time (s)",
-       "xAxis": "ln(V)",
+       "yAxis": "ln(V)",
+       "xAxis": "Time (s)",
        "xEntryTitle": "Time (s)",
        "yEntryTitle": "Voltage (V)",
        "originalEquation": "V = V₀e^(-t/RC)",
@@ -86,8 +85,8 @@ RP9 = {"name": "RP9 Charging and Discharging Capacitors",
        "mode": 2
        }
 RP10 = {"name": "RP10 Magnetic Force on a Wire",
-       "yAxis": "Current (A)",
-       "xAxis": "Mass (kg)",
+       "yAxis": "Mass (kg)",
+       "xAxis": "Current (A)",
        "xEntryTitle": "Current (A)",
        "yEntryTitle": "Mass (kg)",
        "originalEquation": "F = nBIL",
@@ -95,8 +94,8 @@ RP10 = {"name": "RP10 Magnetic Force on a Wire",
        "mode": 0
        }
 RP11 = {"name": "RP11 Magnetic Flux Linkage",
-       "yAxis": "cos(θ)",
-       "xAxis": "ε₀ (V)",
+       "yAxis": "ε₀ (V)",
+       "xAxis": "cos(θ)",
        "xEntryTitle": "Angle (θ)",
        "yEntryTitle": "Peak emf (V)",
        "originalEquation": "ε = -B₀ANωsin(ωt)cos(θ)",
@@ -126,32 +125,29 @@ requiredPracticalList.append(RP10)
 requiredPracticalList.append(RP11)
 requiredPracticalList.append(RP12)
 
-####################################
-#database=open("RP info.txt", "w", encoding="utf-8")
-#
-#def makeHash(key):
-#    #hash function
-#
-#    hash_val = 0
-#    
-#    for letter in key:
-#        hash_val += ord(letter)
-#    hash_val = hash_val % 97
-#    
-#    return key
-#    
-#for i in requiredPracticalList:
-#    key = makeHash(i["name"])
-#    empty_list[key] = str(i)
-#
-#for i in empty_list:
-#    database.write(str(i) + "\n")
-#
-#database.close()
-#####################################
+# Generator for `RP info.txt`: run `python3 hashing.py --write` after editing the dicts above.
+# Each dict goes in slot hashKey(name) (sum of ord() mod 97), probing forward on a collision, and is
+# written one `str(dict)` per line with CRLF line endings (the format rp_data.loadTable reads back).
 
-from rp_data import hashGet # Shared lookup, also used by Main.py
+def buildTable(practicals = requiredPracticalList, size = TABLE_SIZE):
+    """Return a `size`-slot list of str(dict) / "" for the given practical dicts."""
+    table = [""] * size
+    for practical in practicals:
+        slot = hashKey(practical["name"])
+        while table[slot]:
+            slot = (slot + 1) % size
+        table[slot] = str(practical)
+    return table
 
-if __name__ == "__main__": # Quick data check when run directly
-    print(hashGet("RP11 Magnetic Flux Linkage"))
+def writeTable(path = DATA_FILE):
+    with open(path, "w", encoding = "utf-8", newline = "") as database:
+        for line in buildTable():
+            database.write(line + "\r\n")
+
+if __name__ == "__main__":
+    if "--write" in sys.argv: # Regenerate RP info.txt from the dicts above
+        writeTable()
+        print("Wrote", DATA_FILE)
+    else: # Quick data check when run directly
+        print(hashGet("RP11 Magnetic Flux Linkage"))
     

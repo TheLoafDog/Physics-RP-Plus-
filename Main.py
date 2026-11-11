@@ -69,7 +69,8 @@ def main():
     # Creates sidebar buttons
     
     for i in range(0,12):
-        newSideBarButton = Button(master = sideBarButtonFrame, width = 20, height = 2, bd = 2, relief = "raised", text = requiredPracticalList[i], wraplength = 125, command = lambda i = i: openRP(mainFrame, hashGet(requiredPracticalList[i])["xAxis"], hashGet(requiredPracticalList[i])["yAxis"], hashGet(requiredPracticalList[i])["xEntryTitle"], hashGet(requiredPracticalList[i])["yEntryTitle"], hashGet(requiredPracticalList[i])["originalEquation"], hashGet(requiredPracticalList[i])["linearisedEquation"], hashGet(requiredPracticalList[i])["mode"]))
+        rp = hashGet(requiredPracticalList[i]) # Looked up once per button; the dict's xAxis/yAxis are the graph labels, the entry titles are the raw readings
+        newSideBarButton = Button(master = sideBarButtonFrame, width = 20, height = 2, bd = 2, relief = "raised", text = requiredPracticalList[i], wraplength = 125, command = lambda rp = rp: openRP(mainFrame, rp["xAxis"], rp["yAxis"], rp["xEntryTitle"], rp["yEntryTitle"], rp["originalEquation"], rp["linearisedEquation"], rp["mode"]))
         newSideBarButton.grid(row = i, column = 0, padx = 5, pady = 5)
     
     root.mainloop()
@@ -230,7 +231,7 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
     
     canvas.draw() # Draw the canvas
     
-def openRP(mainFrame, yAxis, xAxis, xEntryTitle, yEntryTitle, originalEquation, linearisedEquation, mode):
+def openRP(mainFrame, xAxis, yAxis, xEntryTitle, yEntryTitle, originalEquation, linearisedEquation, mode): # xAxis / yAxis are the graph axis labels (already linearised, e.g. "1 / Length"); the entry titles describe the raw readings
     destroyFrames(mainFrame)
     
     RPFrame = Frame(master = mainFrame, width = 880, height = 720, bd = 2, relief = "groove")

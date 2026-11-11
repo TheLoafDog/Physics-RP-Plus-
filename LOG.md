@@ -38,3 +38,8 @@
 ## 2026-11-11 — createEntryRow helper
 - The three identical "build an entry row" blocks (first row in `createDataEntryFrame`, two in `refreshGraph`) are now one `createEntryRow(entryListFrame, row, ...)` helper.
 - Pure refactor; py_compile and pytest pass. No Tk in the sandbox, so not run interactively. Merged by Claude (autonomous run).
+
+## 2026-11-11 — x/y naming untangled
+- `openRP` now takes `(xAxis, yAxis, ...)` in the order the sidebar passes them, and every RP dict's `xAxis`/`yAxis` are now the labels actually drawn on the x and y axes (values swapped in hashing.py and `RP info.txt`). Displayed graphs are unchanged.
+- Replaced the broken commented-out generator with `buildTable`/`writeTable` (`python3 hashing.py --write`); new tests check the dicts match the data file and that axis labels match each practical's transform mode.
+- py_compile, data check and pytest pass. Merged by Claude (autonomous run).
