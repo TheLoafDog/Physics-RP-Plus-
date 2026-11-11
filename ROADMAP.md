@@ -1,6 +1,6 @@
 # Roadmap
 
-Ordered checklist. One item per Claude session; each should fit in one small PR.
+Ordered checklist. Up to 4 items per Claude session; each should fit in one small PR.
 Items tagged [needs Brandon] are skipped by unattended runs.
 
 ## Phase 1 — Structure and tooling
