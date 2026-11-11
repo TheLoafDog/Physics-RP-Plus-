@@ -67,3 +67,7 @@
 ## 2026-11-11 — Clear button
 - A red "Clear" button at the bottom right of the data-entry panel (next to the error message, which is now left-aligned and a little narrower) destroys every entry row, resets `x`/`y`/`rowIndex`, redraws the placeholder graph, sets the gradient/intercept back to "Unavailable" and leaves one empty row.
 - The placeholder-graph reset moved out of `createGraph` into `resetGraph`, shared with `clearData`. pytest plus a headless xvfb run (add 3 readings, clear, add again) pass. Merged by Claude (autonomous run).
+
+## 2026-11-11 — export PNG / CSV
+- New "Export" panel under the data-entry panel with "Save graph as PNG" (matplotlib `savefig`, 150 dpi) and "Save data as CSV" (header = the two axis labels, then the plotted, linearised readings; UTF-8). Both open a save-as dialog with a filesystem-safe default name from the practical's name; cancelling does nothing.
+- Logic is in tkinter-free `export.py` (`tests/test_export.py`). pytest plus a headless xvfb run with the dialog stubbed pass. Merged by Claude (autonomous run).
