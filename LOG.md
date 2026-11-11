@@ -34,3 +34,7 @@
 ## 2026-11-11 — CI workflow
 - Added `.github/workflows/ci.yml`: Python 3.12, installs requirements + pytest, runs py_compile, `hashing.py` and pytest on push and pull_request.
 - Merged by Claude (autonomous run); the first Actions run happens on the merge commit itself, so check the Actions tab if it is red.
+
+## 2026-11-11 — createEntryRow helper
+- The three identical "build an entry row" blocks (first row in `createDataEntryFrame`, two in `refreshGraph`) are now one `createEntryRow(entryListFrame, row, ...)` helper.
+- Pure refactor; py_compile and pytest pass. No Tk in the sandbox, so not run interactively. Merged by Claude (autonomous run).

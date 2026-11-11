@@ -140,18 +140,21 @@ def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, 
     dataEntryFrame = Frame(master = dataFrame, width = 216, height = 430, bg = darkGrey)
     dataEntryFrame.place(x = 10, y = 40)
     
-    # Creates the data entry frame
+    # Creates the first data entry row (gridded at row 0)
     
-    dataEntry = Frame(master = dataEntryFrame, width = 216, height = 20, bg = darkGrey)
+    createEntryRow(dataEntryFrame, 0, axes, canvas, xAxis, yAxis, mode, gradientString, interceptString)
+
+def createEntryRow(entryListFrame, row, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString): # Creates one data-entry row (x entry, y entry, add/remove button) gridded at `row`
+    
+    dataEntry = Frame(master = entryListFrame, width = 216, height = 20, bg = darkGrey)
     xEntry = Entry(master = dataEntry)
     yEntry = Entry(master = dataEntry)
-    # The button will refresh the graph with the new entries
-    addButton = Button(master = dataEntry, height = 20, width = 20, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, dataEntryFrame, xAxis, yAxis, mode, gradientString, interceptString))
+    # The button will refresh the graph with the new entries (and turns red once the entry is added, so pressing it again removes it)
+    addButton = Button(master = dataEntry, height = 20, width = 20, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString))
     xEntry.place(x = 0, y = 0, width = 90, height = 20)
     yEntry.place(x = 100, y = 0, width = 90, height = 20)
     addButton.place(x = 196, y = 0)
-    dataEntry.grid(row = 0, column = 0, pady = 3)
-    # First data entry will be gridded at row 0
+    dataEntry.grid(row = row, column = 0, pady = 3)
 
 def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString): # Refreshes the graph with the new data
     
@@ -189,16 +192,9 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         x = np.array([newX]) # Replaces the x and y arrays with the new entry, since there is only one entry
         y = np.array([newY])
         
-        # Creates the new frame for new entries
+        # Creates the next empty row for new entries
         
-        dataEntry = Frame(master = entryListFrame, width = 216, height = 20, bg = darkGrey)
-        xEntry = Entry(master = dataEntry)
-        yEntry = Entry(master = dataEntry)
-        addButton = Button(master = dataEntry, height = 20, width = 20, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString))
-        xEntry.place(x = 0, y = 0, width = 90, height = 20)
-        yEntry.place(x = 100, y = 0, width = 90, height = 20)
-        addButton.place(x = 196, y = 0)
-        dataEntry.grid(row = rowIndex, column = 0, pady = 3)
+        createEntryRow(entryListFrame, rowIndex, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString)
         rowIndex += 1 # Places it at the new row, and adds one to the row index
     elif len(x) == 16: # If there are max entries, do nothing
         return ""
@@ -210,14 +206,7 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         x = np.append(x, [newX])
         y = np.append(y, [newY])
         
-        dataEntry = Frame(master = entryListFrame, width = 216, height = 20, bg = darkGrey)
-        xEntry = Entry(master = dataEntry)
-        yEntry = Entry(master = dataEntry)
-        addButton = Button(master = dataEntry, height = 20, width = 20, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString))
-        xEntry.place(x = 0, y = 0, width = 90, height = 20)
-        yEntry.place(x = 100, y = 0, width = 90, height = 20)
-        addButton.place(x = 196, y = 0)
-        dataEntry.grid(row = rowIndex, column = 0, pady = 3)
+        createEntryRow(entryListFrame, rowIndex, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString)
         rowIndex += 1
     
     axes.scatter(x, y, marker = "+", color = "black", s = 100) # Displays the new updated graph
