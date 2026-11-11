@@ -29,3 +29,25 @@ def test_remove_point_removes_first_duplicate_only():
 def test_remove_point_raises_when_pair_is_absent():
     with pytest.raises(ValueError):
         remove_point(np.array([1.0, 3.0]), np.array([5.0, 2.0]), 1.0, 2.0)
+
+
+from points import axis_limits
+
+
+def test_axis_limits_positive_data_starts_at_zero():
+    assert axis_limits(np.array([2.0, 5.0])) == (0.0, pytest.approx(5.5))
+
+
+def test_axis_limits_negative_data_extends_below_zero():
+    low, high = axis_limits(np.array([-2.0, -0.5]))
+    assert low == pytest.approx(-2.2)
+    assert high == 0.0
+
+
+def test_axis_limits_mixed_data_includes_both_signs():
+    assert axis_limits(np.array([-1.0, 3.0])) == (pytest.approx(-1.1), pytest.approx(3.3))
+
+
+def test_axis_limits_never_returns_an_empty_range():
+    low, high = axis_limits(np.array([0.0]))
+    assert low < 0 < high

@@ -15,7 +15,7 @@ Items tagged [needs Brandon] are skipped by unattended runs.
 - [x] Untangle the x/y naming: `openRP(mainFrame, yAxis, xAxis, ...)` receives `xAxis` as `yAxis`, and the RP dicts' `xAxis`/`yAxis` fields are swapped relative to the entry titles. Make the field names mean what they say without changing what's displayed.
 - [x] Fix removal of a data point: it currently checks `newX in x and newY in y` independently and deletes by separate x/y indices, so it can remove the wrong pair. Match on the (x, y) pair instead.
 - [x] Replace the bare `except:` in `refreshGraph` with specific exceptions (ValueError, ZeroDivisionError) and show a short message for invalid input (e.g. ln of a non-positive value).
-- [ ] Axis limits: allow negative values (e.g. RP9 ln(V) data, RP6 if plotted with offsets) instead of always starting at 0.
+- [x] Axis limits: allow negative values (e.g. RP9 ln(V) data, RP6 if plotted with offsets) instead of always starting at 0.
 
 ## Phase 2 — New implementations
 - [ ] [needs Brandon] Fill in RP7 (Simple Harmonic Motion): choose which graph the app should plot (e.g. T² against l for a pendulum, or T² against m for a mass-spring) and its axes/equations.

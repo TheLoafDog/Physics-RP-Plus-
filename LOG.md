@@ -51,3 +51,7 @@
 ## 2026-11-11 — input error messages
 - `refreshGraph` catches only `ValueError` / `ZeroDivisionError` from `transform_point` and shows a short red message under the entry rows (new `messageString` label in `createDataEntryFrame`): blank or non-numeric box, 1 / 0, ln of a non-positive value, or the 16-reading limit. Cleared on the next valid click.
 - Message text comes from tkinter-free `transforms.input_error_message` (tested). pytest + headless smoke run pass. Merged by Claude (autonomous run).
+
+## 2026-11-11 — axis limits allow negative values
+- `refreshGraph` sets limits with new `points.axis_limits`: still 0 → 1.1 × max for positive data, but the axis now extends below 0 when readings are negative (RP9 ln(V) for V < 1 V), and never gets an empty range.
+- Tested in `tests/test_points.py`. Merged by Claude (autonomous run).
