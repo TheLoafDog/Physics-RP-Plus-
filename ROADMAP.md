@@ -7,7 +7,7 @@ Items tagged [needs Brandon] are skipped by unattended runs.
 - [x] README: add requirements, install and run instructions, and a short description of how to use the app.
 - [x] Add `requirements.txt` (matplotlib, numpy) and a `.gitignore` for Python (`__pycache__/`, venvs).
 - [x] Move practical data and `hashGet` into a tkinter-free module (e.g. `rp_data.py`) used by both `Main.py` and `hashing.py`, removing the duplicated `hashGet`; resolve `RP info.txt` relative to the script file so the app runs from any directory.
-- [ ] Guard the app start-up with `if __name__ == "__main__":` so modules can be imported without opening a window.
+- [x] Guard the app start-up with `if __name__ == "__main__":` so modules can be imported without opening a window.
 - [ ] Move the data-transform logic (`mode` 0–3) into a pure function (e.g. `transform_point(x, y, mode)`) and drop the label-string mode re-detection inside `refreshGraph`.
 - [ ] Add a pytest harness with tests for `hashGet` (all 12 RPs found) and the transform function.
 - [ ] Add a GitHub Actions workflow running `py_compile` and `pytest` on push/PR.
