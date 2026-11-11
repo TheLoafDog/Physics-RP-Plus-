@@ -55,3 +55,7 @@
 ## 2026-11-11 — axis limits allow negative values
 - `refreshGraph` sets limits with new `points.axis_limits`: still 0 → 1.1 × max for positive data, but the axis now extends below 0 when readings are negative (RP9 ln(V) for V < 1 V), and never gets an empty range.
 - Tested in `tests/test_points.py`. Merged by Claude (autonomous run).
+
+## 2026-11-11 — gradient and intercept rounded with units
+- The info panel now shows the fit as e.g. "-1.00 V / A" and "1.50 V" instead of raw floats: new tkinter-free `fit.format_fit` rounds to 3 s.f. (scientific notation for very large/small values) and takes units from the trailing "(unit)" of the axis labels; `ln(V)` and `cos(θ)` are treated as dimensionless, so RP9's gradient is in s⁻¹ and its intercept has no unit.
+- Tested in `tests/test_fit.py`; pytest plus a headless xvfb smoke run of RP6 pass. Merged by Claude (autonomous run).

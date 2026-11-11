@@ -19,6 +19,7 @@ requiredPracticalList = ["RP1 Stationary Waves on a String", "RP2 Interference E
 from rp_data import hashGet # Practical data lookup (shared with hashing.py)
 from transforms import transform_point, input_error_message # Linearises a reading according to the practical's mode / explains why it can't
 from points import remove_point, axis_limits # Removes one (x, y) reading from the plotted arrays / picks axis limits that include negative values
+from fit import format_fit # Rounds the gradient and intercept to 3 s.f. and adds units worked out from the axis labels
 
 
 # Global variables
@@ -229,8 +230,9 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
     if len(x) > 1 and len(y) > 1: # Draws gradient and changes string variables if applicable
         gradient, intercept = np.polyfit(x, y, 1)
         axes.plot(x, gradient * x + intercept, linestyle = "--", linewidth = 1)
-        gradientString.set(f"{str(gradient)}")
-        interceptString.set(f"{str(intercept)}")
+        gradientText, interceptText = format_fit(gradient, intercept, xLabel, yLabel) # e.g. "-1.00 V / A", "1.50 V"
+        gradientString.set(gradientText)
+        interceptString.set(interceptText)
         
     
     if len(x) == 1 and x[0] == 0: # If there is no entry, set the x and y limits to 10 as placeholder
