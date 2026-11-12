@@ -70,3 +70,29 @@ def test_every_filled_in_practical_formats():
         if rp["xAxis"]:
             gradient, intercept = format_fit(1.0, 2.0, rp["xAxis"], rp["yAxis"])
             assert gradient.startswith("1.00") and intercept.startswith("2.00")
+
+
+def test_r_squared_is_one_for_a_perfect_line():
+    from fit import r_squared, r_squared_text
+    x = [0.0, 1.0, 2.0, 3.0]
+    y = [1.0, 3.0, 5.0, 7.0]
+    assert r_squared(x, y, 2.0, 1.0) == pytest.approx(1.0)
+    assert r_squared_text(x, y, 2.0, 1.0) == "R² = 1.0000"
+
+
+def test_r_squared_matches_definition_for_scattered_data():
+    import numpy as np
+    from fit import r_squared
+    x = np.array([0.0, 1.0, 2.0, 3.0])
+    y = np.array([0.0, 2.5, 3.5, 6.0])
+    gradient, intercept = np.polyfit(x, y, 1)
+    ss_res = np.sum((y - (gradient * x + intercept)) ** 2)
+    ss_tot = np.sum((y - y.mean()) ** 2)
+    assert r_squared(x, y, gradient, intercept) == pytest.approx(1 - ss_res / ss_tot)
+    assert 0.9 < r_squared(x, y, gradient, intercept) < 1.0
+
+
+def test_r_squared_undefined_when_all_y_equal():
+    from fit import r_squared, r_squared_text
+    assert r_squared([0.0, 1.0], [2.0, 2.0], 0.0, 2.0) is None
+    assert r_squared_text([0.0, 1.0], [2.0, 2.0], 0.0, 2.0) == ""

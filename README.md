@@ -22,7 +22,8 @@ python3 Main.py
 2. Type an x and y reading into the two boxes and press the green button to add the point.
    Where the practical needs it, the app transforms your readings automatically
    (for example 1/L for RP1, ln(V) for RP9, cos θ for RP11).
-3. Add more points: from two points onwards, the best-fit line, gradient and y-intercept appear.
+3. Add more points: from two points onwards, the best-fit line, gradient, y-intercept and R² (how
+   closely the points follow the line; 1 is perfect) appear.
    Optionally type the absolute uncertainty of a y reading into the small "± y" box: the app then
    draws error bars, the steepest and shallowest worst-fit lines through the first and last error
    bars, and the ± and percentage uncertainty in the gradient.

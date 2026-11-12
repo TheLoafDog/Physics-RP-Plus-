@@ -85,3 +85,7 @@
 - `x`, `y`, `dy` are now empty arrays until the first reading is added (previously a (0, 0) placeholder, so a real first reading at x = 0, e.g. t = 0 in RP9, was overwritten by the next one). `refreshGraph` lost its separate "first reading" branch; `export.has_readings` is now `len(x) > 0`.
 - `derived_quantities` converts the fit to plain floats so a zero gradient gives "RC unavailable" instead of "inf s" with a numpy warning.
 - pytest plus a headless xvfb run (RP9 from t = 0, remove all, Clear, export, 16-reading limit) pass. Merged by Claude (autonomous run).
+
+## 2026-11-12 — R² of the best-fit line
+- `fit.r_squared` / `r_squared_text` compute the coefficient of determination (1 − SS_res / SS_tot, None when all y are equal); `refreshGraph` shows it as "R² = 0.9920" (4 d.p.) on the second line of the y-intercept label, mirroring the gradient's ± line.
+- Tested in `tests/test_fit.py`; pytest plus a headless xvfb run with a screenshot pass. Merged by Claude (autonomous run).
