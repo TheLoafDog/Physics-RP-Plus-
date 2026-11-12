@@ -20,8 +20,9 @@ requiredPracticalList = ["RP1 Stationary Waves on a String", "RP2 Interference E
 
 from rp_data import hashGet # Practical data lookup (shared with hashing.py)
 from transforms import transform_point, inverse_transform_point, input_error_message # Linearises a reading according to the practical's mode (and undoes it for imported exports) / explains why it can't
-from points import remove_point, axis_limits # Removes one (x, y) reading from the plotted arrays / picks axis limits that include negative values
-from fit import format_fit # Rounds the gradient and intercept to 3 s.f. and adds units worked out from the axis labels
+from points import find_point, remove_point, axis_limits # Finds / removes one (x, y) reading in the plotted arrays / picks axis limits that include negative values
+from fit import format_fit, axis_unit, gradient_unit # Rounds the gradient and intercept to 3 s.f. and adds units worked out from the axis labels
+from uncertainty import parse_uncertainty, transform_uncertainty, has_uncertainties, worst_fit_lines, uncertainty_text # Optional "± y" error bars, worst-fit lines and the % uncertainty in the gradient
 from derived import derived_text # Physical quantities read straight off the fit (e.g. RP6: E = intercept, r = -gradient)
 from export import write_csv, save_png, default_filename, read_csv, parse_readings # Save the plotted readings as CSV / the graph as PNG, and read a CSV of readings back in
 
@@ -30,6 +31,7 @@ from export import write_csv, save_png, default_filename, read_csv, parse_readin
 
 x = np.array([0]) # x is the points on the x axis. Gets reset every time new practical is opened.
 y = np.array([0]) # y is the points on the y axis. Gets reset every time new practical is opened.
+dy = np.array([0.0]) # dy is the absolute uncertainty in each plotted y (0 when the "± y" box was left blank). Parallel to x and y.
 rowIndex = 1 # This is used for creating new entries. It uses the rowIndex as the row when gridding. Gets reset every time new practical is opened.
 
 def main():
@@ -112,12 +114,14 @@ def resetGraph(axes, canvas, xLabel, yLabel): # Forgets all readings and draws t
     
     global x
     global y
+    global dy
     global rowIndex
     
     # Resets global variables
     
     x = np.array([0])
     y = np.array([0])
+    dy = np.array([0.0])
     rowIndex = 1
     
     # Creates the placeholder graph
@@ -141,11 +145,13 @@ def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, 
     
     # Creates the labels that tell the user what to input
     
-    xTitle = Label(master = dataFrame, width = 12, height = 3, bg = darkGrey, text = xEntryTitle, font = ('Arial Bold', 8), justify = CENTER, wraplength = 100)
-    yTitle = Label(master = dataFrame, width = 12, height = 3, bg = darkGrey, text = yEntryTitle, font = ('Arial Bold', 8), justify = CENTER, wraplength = 100)
+    xTitle = Label(master = dataFrame, width = 10, height = 3, bg = darkGrey, text = xEntryTitle, font = ('Arial Bold', 8), justify = CENTER, wraplength = 76)
+    yTitle = Label(master = dataFrame, width = 10, height = 3, bg = darkGrey, text = yEntryTitle, font = ('Arial Bold', 8), justify = CENTER, wraplength = 76)
+    uncertaintyTitle = Label(master = dataFrame, width = 5, height = 3, bg = darkGrey, text = "± y\n(opt.)", font = ('Arial Bold', 8), justify = CENTER, wraplength = 44)
     
-    xTitle.place(x = 10, y = 0)
-    yTitle.place(x = 110, y = 0)
+    xTitle.place(x = 10, y = 0, width = 78)
+    yTitle.place(x = 90, y = 0, width = 78)
+    uncertaintyTitle.place(x = 164, y = 0, width = 44)
     
     # Creates the frame where the data entry frames will be gridded into
     
@@ -188,28 +194,37 @@ def createEntryRow(entryListFrame, row, axes, canvas, xLabel, yLabel, mode, grad
     dataEntry = Frame(master = entryListFrame, width = 216, height = 20, bg = darkGrey)
     xEntry = Entry(master = dataEntry)
     yEntry = Entry(master = dataEntry)
+    uncertaintyEntry = Entry(master = dataEntry) # Optional absolute uncertainty in the y reading (blank = none)
     # The button will refresh the graph with the new entries (and turns red once the entry is added, so pressing it again removes it)
-    addButton = Button(master = dataEntry, height = 20, width = 20, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name))
-    xEntry.place(x = 0, y = 0, width = 90, height = 20)
-    yEntry.place(x = 100, y = 0, width = 90, height = 20)
+    addButton = Button(master = dataEntry, height = 20, width = 20, text = "", bg = lightGreen, justify = CENTER, command = lambda: refreshGraph(axes, canvas, xEntry.get(), yEntry.get(), dataEntry, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name, uncertaintyEntry.get()))
+    xEntry.place(x = 0, y = 0, width = 72, height = 20)
+    yEntry.place(x = 78, y = 0, width = 72, height = 20)
+    uncertaintyEntry.place(x = 156, y = 0, width = 36, height = 20)
     addButton.place(x = 196, y = 0)
     dataEntry.grid(row = row, column = 0, pady = 3)
 
-def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name): # Refreshes the graph with the new data
+def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name, newDY = ""): # Refreshes the graph with the new data (`newDY` is the optional "± y" box)
     
     # Retrieves global variables
     
     global x
     global y
+    global dy
     global rowIndex
     
     removing = entryButton.cget("bg") == lightRed # A red button belongs to a row that has been added, so pressing it removes that reading
     
     if not removing: # Tries to convert user input into numbers; if it cannot, it shows why and leaves the graph alone
         try:
+            rawY = newY
             newX, newY = transform_point(newX, newY, mode) # Mode 1 applies 1 / x, mode 2 ln(y), mode 3 cos(x) (see transforms.py)
         except (ValueError, ZeroDivisionError): # Non-numeric text, 1 / 0, or ln of a non-positive value
             messageString.set(input_error_message(newX, newY, mode))
+            return ""
+        try:
+            newDY = transform_uncertainty(rawY, parse_uncertainty(newDY), mode) # Blank = 0; for ln(y) the uncertainty becomes Δy / y
+        except ValueError: # Non-numeric or negative
+            messageString.set("± y must be a number that is 0 or more")
             return ""
     
     messageString.set("") # The last click was valid, so clear any earlier message
@@ -224,7 +239,9 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         if len(x) == 1: # If it is the only entry, it resets the graph
             x = np.array([0])
             y = np.array([0])
+            dy = np.array([0.0])
         else: # Otherwise it removes the (x, y) pair that this row added (remembered on the button, so editing the boxes afterwards can't remove the wrong reading)
+            dy = np.delete(dy, find_point(x, y, *entryButton.addedPoint))
             x, y = remove_point(x, y, *entryButton.addedPoint)
     elif len(x) == 1 and x[0] == 0: # If there is no other data (x only has one entry, 0) and data is added
         
@@ -232,6 +249,7 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         entryButton.addedPoint = (newX, newY) # Remembers which reading this row added, so removal matches the pair exactly
         x = np.array([newX]) # Replaces the x and y arrays with the new entry, since there is only one entry
         y = np.array([newY])
+        dy = np.array([newDY])
         
         # Creates the next empty row for new entries
         
@@ -248,11 +266,16 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         entryButton.addedPoint = (newX, newY)
         x = np.append(x, [newX])
         y = np.append(y, [newY])
+        dy = np.append(dy, [newDY])
         
         createEntryRow(entryListFrame, rowIndex, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name)
         rowIndex += 1
     
     axes.scatter(x, y, marker = "+", color = "black", s = 100) # Displays the new updated graph
+    
+    showUncertainty = has_uncertainties(dy) # Only draw error bars and worst-fit lines when at least one "± y" was given
+    if showUncertainty:
+        axes.errorbar(x, y, yerr = dy, fmt = "none", ecolor = "black", elinewidth = 1, capsize = 3)
     
     gradientString.set("Unavailable") # Sets the string variables to unavailable, changes if they are available
     interceptString.set("Unavailable")
@@ -262,6 +285,13 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         gradient, intercept = np.polyfit(x, y, 1)
         axes.plot(x, gradient * x + intercept, linestyle = "--", linewidth = 1)
         gradientText, interceptText = format_fit(gradient, intercept, xLabel, yLabel) # e.g. "-1.00 V / A", "1.50 V"
+        worst = worst_fit_lines(x, y, dy) if showUncertainty else None
+        if worst is not None: # Steepest and shallowest lines through the ends of the first and last error bars, and the gradient's ± on a second line
+            (steepGradient, steepIntercept), (shallowGradient, shallowIntercept) = worst
+            lineX = np.array([np.min(x), np.max(x)])
+            axes.plot(lineX, steepGradient * lineX + steepIntercept, linestyle = ":", linewidth = 1, color = darkRed)
+            axes.plot(lineX, shallowGradient * lineX + shallowIntercept, linestyle = ":", linewidth = 1, color = darkRed)
+            gradientText += "\n" + uncertainty_text(gradient, steepGradient, shallowGradient, gradient_unit(axis_unit(xLabel), axis_unit(yLabel)))
         gradientString.set(gradientText)
         interceptString.set(interceptText)
         derivedString.set(derived_text(name, gradient, intercept)) # e.g. RP6: E from the intercept, r from the gradient; blank for practicals without a direct quantity
@@ -365,7 +395,7 @@ def importDataCSV(path, entryListFrame, axes, canvas, xLabel, yLabel, mode, grad
         return ""
     
     added = 0
-    for rawX, rawY in readings:
+    for rawX, rawY, rawDY in readings: # rawDY is "" when the file has no third column
         if linearised: # The app's own export holds linearised values, so undo the transform to get back the raw reading
             try:
                 rawX, rawY = inverse_transform_point(rawX, rawY, mode)
@@ -379,20 +409,19 @@ def importDataCSV(path, entryListFrame, axes, canvas, xLabel, yLabel, mode, grad
             continue
         
         rowFrame = entryListFrame.winfo_children()[-1] # The last row is always the empty one waiting for input
-        xEntry, yEntry, addButton = rowFrame.winfo_children()
-        xEntry.delete(0, END)
-        yEntry.delete(0, END)
-        xEntry.insert(0, rawX)
-        yEntry.insert(0, rawY)
+        xEntry, yEntry, uncertaintyEntry, addButton = rowFrame.winfo_children()
+        for entry, text in ((xEntry, rawX), (yEntry, rawY), (uncertaintyEntry, rawDY)):
+            entry.delete(0, END)
+            entry.insert(0, text)
         
-        refreshGraph(axes, canvas, rawX, rawY, rowFrame, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name)
+        refreshGraph(axes, canvas, rawX, rawY, rowFrame, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name, rawDY)
         
         if addButton.cget("bg") == lightRed: # The button turns red once the reading was accepted
             added += 1
         else: # Rejected (e.g. ln of a non-positive value): leave the row empty again for the next reading
             skipped += 1
-            xEntry.delete(0, END)
-            yEntry.delete(0, END)
+            for entry in (xEntry, yEntry, uncertaintyEntry):
+                entry.delete(0, END)
     
     summary = f"Imported {added} reading{'s' if added != 1 else ''}"
     if skipped:

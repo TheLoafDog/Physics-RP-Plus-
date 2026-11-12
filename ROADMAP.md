@@ -27,5 +27,6 @@ Items tagged [needs Brandon] are skipped by unattended runs.
 - [x] Add a "Clear data" button that resets the current practical's points.
 - [x] Export: save the current graph as PNG and the entered data as CSV.
 - [x] Import data from a CSV file into the current practical.
-- [ ] Uncertainty: optional error bars per point, plus worst-fit (max/min gradient) lines and the percentage uncertainty in the gradient.
+- [x] Uncertainty: optional error bars per point, plus worst-fit (max/min gradient) lines and the percentage uncertainty in the gradient.
+- [ ] Fix: a genuine first reading at x = 0 (e.g. t = 0 in RP9) is treated as the (0, 0) placeholder, so the next reading replaces it instead of being added. Track "no readings yet" explicitly instead of testing `len(x) == 1 and x[0] == 0`.
 - [ ] Show the coefficient of determination (R²) for the best-fit line.

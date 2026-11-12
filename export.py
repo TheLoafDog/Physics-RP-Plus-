@@ -51,8 +51,8 @@ def read_csv(path):
 def parse_readings(rows, x_label, y_label):
     """Split CSV `rows` into (readings, linearised, skipped).
 
-    `readings` is a list of (x text, y text) pairs from the first two columns of
-    each row. A first row whose two cells are not both numbers is taken as a
+    `readings` is a list of (x text, y text, ± y text) triples from the first
+    three columns of each row (the third is "" when a row has only two). A first row whose two cells are not both numbers is taken as a
     header; `linearised` is True when that header is the app's own export header
     (the two axis labels), meaning the values are already transformed. `skipped`
     counts rows with fewer than two cells, which are left out.
@@ -63,7 +63,7 @@ def parse_readings(rows, x_label, y_label):
         rows = rows[1:]
     elif rows and len(rows[0]) < 2 and rows[0] and not is_number(rows[0][0]):
         rows = rows[1:]  # a one-cell title line
-    readings = [(row[0], row[1]) for row in rows if len(row) >= 2]
+    readings = [(row[0], row[1], row[2] if len(row) > 2 else "") for row in rows if len(row) >= 2]
     return readings, linearised, len(rows) - len(readings)
 
 

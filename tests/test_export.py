@@ -58,14 +58,14 @@ def test_read_csv_skips_blank_lines_and_bom(tmp_path):
 
 def test_parse_readings_raw_with_header():
     readings, linearised, skipped = parse_readings([["Length (m)", "Frequency (Hz)"], ["0.5", "100"], ["0.25", "200"]], "1 / Length (1 / m)", "Frequency (Hz)")
-    assert readings == [("0.5", "100"), ("0.25", "200")]
+    assert readings == [("0.5", "100", ""), ("0.25", "200", "")]
     assert not linearised
     assert skipped == 0
 
 
 def test_parse_readings_without_header():
     readings, linearised, skipped = parse_readings([["1", "2"], ["3", "4"]], "x", "y")
-    assert readings == [("1", "2"), ("3", "4")]
+    assert readings == [("1", "2", ""), ("3", "4", "")]
     assert not linearised
 
 
@@ -74,10 +74,15 @@ def test_parse_readings_recognises_own_export_header():
     rows = [[str(cell) for cell in row] for row in rows]
     readings, linearised, skipped = parse_readings(rows, "1 / Length (1 / m)", "Frequency (Hz)")
     assert linearised
-    assert readings == [("2.0", "1.0"), ("4.0", "2.0")]
+    assert readings == [("2.0", "1.0", ""), ("4.0", "2.0", "")]
 
 
 def test_parse_readings_counts_short_rows_as_skipped():
     readings, _, skipped = parse_readings([["x", "y"], ["1"], ["2", "3"], []], "x", "y")
-    assert readings == [("2", "3")]
+    assert readings == [("2", "3", "")]
     assert skipped == 2
+
+
+def test_parse_readings_keeps_optional_uncertainty_column():
+    readings, _, _ = parse_readings([["x", "y", "± y"], ["1", "2", "0.1"], ["3", "4"]], "x", "y")
+    assert readings == [("1", "2", "0.1"), ("3", "4", "")]
