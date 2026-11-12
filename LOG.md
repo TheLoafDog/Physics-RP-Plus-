@@ -75,3 +75,8 @@
 ## 2026-11-12 — import data from CSV
 - New "Import data from CSV" button in the (renamed) Import / Export panel: each row of the file is typed into the next empty entry row and added as if its button were pressed, so transforms, validation and the 16-reading limit all apply; the message label then says how many readings were imported/skipped. A CSV the app exported (header = axis labels) holds linearised values, so `transforms.inverse_transform_point` turns them back into raw readings first.
 - Parsing is in tkinter-free `export.read_csv` / `parse_readings` (tested). pytest plus a headless xvfb run (raw CSV with bad rows, then export → clear → re-import) pass. Merged by Claude (autonomous run).
+
+## 2026-11-12 — error bars and gradient uncertainty
+- Each entry row has a small optional "± y" box (absolute uncertainty in the y reading; blank = none). New tkinter-free `uncertainty.py` parses it, converts it for ln(y) practicals (Δy / y), draws error bars, and adds the steepest/shallowest worst-fit lines through the ends of the first and last error bars; the gradient label gains a second line "± Δm (p %)" with Δm = half the difference of the two worst gradients. CSV import takes an optional third column.
+- Found while testing (not fixed here): a genuine reading at x = 0 is mistaken for the (0, 0) placeholder, so the next reading replaces it — added to the roadmap.
+- pytest (`tests/test_uncertainty.py`) plus a headless xvfb run (RP6 with ± 0.05 V → ± 0.333 V / A, RP9, import with 3 columns, screenshot) pass. Merged by Claude (autonomous run).
