@@ -66,3 +66,18 @@ def test_message_is_non_empty_exactly_when_transform_point_raises(x, y, mode):
     with pytest.raises((ValueError, ZeroDivisionError)):
         transform_point(x, y, mode)
     assert input_error_message(x, y, mode) != ""
+
+
+@pytest.mark.parametrize("mode,raw", [(0, (2.0, 3.0)), (1, (4.0, 7.0)), (2, (1.0, 5.0)), (3, (60.0, 1.0))])
+def test_inverse_transform_undoes_transform(mode, raw):
+    from transforms import inverse_transform_point
+    back = inverse_transform_point(*transform_point(*raw, mode), mode)
+    assert back == pytest.approx(raw)
+
+
+def test_inverse_transform_rejects_impossible_values():
+    from transforms import inverse_transform_point
+    with pytest.raises(ValueError):
+        inverse_transform_point(1.5, 1, 3)  # cos(θ) can't exceed 1
+    with pytest.raises(ZeroDivisionError):
+        inverse_transform_point(0, 1, 1)

@@ -12,7 +12,8 @@ and y-intercept, alongside the original and linearised equations.
   `clearData` (the Clear button), `openRP`. Creates `Tk()`
   and calls `main()` only under `if __name__ == "__main__":`, so it can be imported without a window.
 - `export.py` — tkinter-free `write_csv(path, x, y, xLabel, yLabel)` (plotted readings under the axis labels), `save_png(figure, path)`
-  and `default_filename(name, ext)`; `Main.createExportButtons` adds the two save-as buttons under the data panel.
+  and `default_filename(name, ext)`, plus `read_csv(path)` / `parse_readings(rows, xLabel, yLabel)` for importing (own-export header ⇒
+  values are linearised and `transforms.inverse_transform_point` undoes the transform); `Main.createExportButtons` adds the save/import buttons under the data panel.
 - `RP info.txt` — the practical "database": one Python dict literal per line, stored in a
   97-slot table at index `sum(ord(c) for c in name) % 97` (linear probing).
 - `rp_data.py` — tkinter-free loader: `hashKey`, `loadTable`, `hashGet(name)` (raises KeyError if

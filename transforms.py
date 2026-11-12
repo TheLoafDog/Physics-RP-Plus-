@@ -33,6 +33,25 @@ def transform_point(x, y, mode):
     return x, y
 
 
+def inverse_transform_point(x, y, mode):
+    """Return the raw reading that `transform_point` would turn into the linearised pair (x, y).
+
+    Used when importing a CSV the app itself exported, which holds linearised values
+    (e.g. 1 / L, ln(V) or cos(θ)) rather than the readings a student typed in.
+    Raises ZeroDivisionError for 1 / 0 (mode 1) and ValueError for a cos value
+    outside [-1, 1] (mode 3) or non-numeric input.
+    """
+    x = float(x)
+    y = float(y)
+    if mode == MODE_RECIPROCAL_X:
+        x = 1 / x
+    elif mode == MODE_LN_Y:
+        y = math.exp(y)
+    elif mode == MODE_COS_X:
+        x = math.degrees(math.acos(x))
+    return x, y
+
+
 def input_error_message(x, y, mode):
     """Return a short message saying why transform_point(x, y, mode) would fail, or "" if it wouldn't.
 

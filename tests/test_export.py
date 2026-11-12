@@ -45,3 +45,39 @@ def test_default_filename_is_filesystem_safe():
     assert default_filename("RP4 Determination of Young's Modulus", ".csv") == "RP4_Determination_of_Youngs_Modulus.csv"
     assert default_filename("RP8 Boyle's Law", ".png") == "RP8_Boyles_Law.png"
     assert default_filename("", ".png") == "graph.png"
+
+
+from export import parse_readings, read_csv
+
+
+def test_read_csv_skips_blank_lines_and_bom(tmp_path):
+    path = tmp_path / "in.csv"
+    path.write_text("﻿x,y\n1, 2\n\n3,4\n", encoding = "utf-8")
+    assert read_csv(path) == [["x", "y"], ["1", "2"], ["3", "4"]]
+
+
+def test_parse_readings_raw_with_header():
+    readings, linearised, skipped = parse_readings([["Length (m)", "Frequency (Hz)"], ["0.5", "100"], ["0.25", "200"]], "1 / Length (1 / m)", "Frequency (Hz)")
+    assert readings == [("0.5", "100"), ("0.25", "200")]
+    assert not linearised
+    assert skipped == 0
+
+
+def test_parse_readings_without_header():
+    readings, linearised, skipped = parse_readings([["1", "2"], ["3", "4"]], "x", "y")
+    assert readings == [("1", "2"), ("3", "4")]
+    assert not linearised
+
+
+def test_parse_readings_recognises_own_export_header():
+    rows = csv_rows(np.array([2.0, 4.0]), np.array([1.0, 2.0]), "1 / Length (1 / m)", "Frequency (Hz)")
+    rows = [[str(cell) for cell in row] for row in rows]
+    readings, linearised, skipped = parse_readings(rows, "1 / Length (1 / m)", "Frequency (Hz)")
+    assert linearised
+    assert readings == [("2.0", "1.0"), ("4.0", "2.0")]
+
+
+def test_parse_readings_counts_short_rows_as_skipped():
+    readings, _, skipped = parse_readings([["x", "y"], ["1"], ["2", "3"], []], "x", "y")
+    assert readings == [("2", "3")]
+    assert skipped == 2

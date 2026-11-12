@@ -26,6 +26,6 @@ Items tagged [needs Brandon] are skipped by unattended runs.
 - [x] Show the physical quantity derived from the gradient/intercept for practicals where it's direct (e.g. RP6: E = intercept, r = −gradient; RP9: RC = −1/gradient).
 - [x] Add a "Clear data" button that resets the current practical's points.
 - [x] Export: save the current graph as PNG and the entered data as CSV.
-- [ ] Import data from a CSV file into the current practical.
+- [x] Import data from a CSV file into the current practical.
 - [ ] Uncertainty: optional error bars per point, plus worst-fit (max/min gradient) lines and the percentage uncertainty in the gradient.
 - [ ] Show the coefficient of determination (R²) for the best-fit line.
