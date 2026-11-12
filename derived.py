@@ -39,6 +39,8 @@ DERIVED = {
 def derived_quantities(name, gradient, intercept):
     """Return a list of "symbol = value unit" strings for practical `name`, or [] if it has none."""
     results = []
+    gradient = float(gradient) # Plain floats raise ZeroDivisionError (numpy's would give inf with a warning instead)
+    intercept = float(intercept)
     for symbol, compute, unit in DERIVED.get(name, []):
         try:
             value = compute(gradient, intercept)

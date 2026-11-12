@@ -40,3 +40,10 @@ def test_practicals_without_direct_quantities_give_nothing():
 
 def test_derived_text_joins_quantities():
     assert derived_text("RP6 Internal resistance and emf", -1.0, 1.5) == "E = 1.50 V,   r = 1.00 Ω"
+
+
+def test_numpy_zero_gradient_is_unavailable_not_inf():
+    import numpy as np
+    from derived import derived_quantities
+    results = derived_quantities("RP9 Charging and Discharging Capacitors", np.float64(0.0), np.float64(1.0))
+    assert results[0] == "RC unavailable"

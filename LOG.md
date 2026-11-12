@@ -80,3 +80,8 @@
 - Each entry row has a small optional "± y" box (absolute uncertainty in the y reading; blank = none). New tkinter-free `uncertainty.py` parses it, converts it for ln(y) practicals (Δy / y), draws error bars, and adds the steepest/shallowest worst-fit lines through the ends of the first and last error bars; the gradient label gains a second line "± Δm (p %)" with Δm = half the difference of the two worst gradients. CSV import takes an optional third column.
 - Found while testing (not fixed here): a genuine reading at x = 0 is mistaken for the (0, 0) placeholder, so the next reading replaces it — added to the roadmap.
 - pytest (`tests/test_uncertainty.py`) plus a headless xvfb run (RP6 with ± 0.05 V → ± 0.333 V / A, RP9, import with 3 columns, screenshot) pass. Merged by Claude (autonomous run).
+
+## 2026-11-12 — readings at x = 0 are kept
+- `x`, `y`, `dy` are now empty arrays until the first reading is added (previously a (0, 0) placeholder, so a real first reading at x = 0, e.g. t = 0 in RP9, was overwritten by the next one). `refreshGraph` lost its separate "first reading" branch; `export.has_readings` is now `len(x) > 0`.
+- `derived_quantities` converts the fit to plain floats so a zero gradient gives "RC unavailable" instead of "inf s" with a numpy warning.
+- pytest plus a headless xvfb run (RP9 from t = 0, remove all, Clear, export, 16-reading limit) pass. Merged by Claude (autonomous run).

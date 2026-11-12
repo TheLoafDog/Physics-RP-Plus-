@@ -29,9 +29,9 @@ from export import write_csv, save_png, default_filename, read_csv, parse_readin
 
 # Global variables
 
-x = np.array([0]) # x is the points on the x axis. Gets reset every time new practical is opened.
-y = np.array([0]) # y is the points on the y axis. Gets reset every time new practical is opened.
-dy = np.array([0.0]) # dy is the absolute uncertainty in each plotted y (0 when the "± y" box was left blank). Parallel to x and y.
+x = np.array([]) # x is the points on the x axis (empty until a reading is added). Gets reset every time new practical is opened.
+y = np.array([]) # y is the points on the y axis. Gets reset every time new practical is opened.
+dy = np.array([]) # dy is the absolute uncertainty in each plotted y (0 when the "± y" box was left blank). Parallel to x and y.
 rowIndex = 1 # This is used for creating new entries. It uses the rowIndex as the row when gridding. Gets reset every time new practical is opened.
 
 def main():
@@ -119,9 +119,9 @@ def resetGraph(axes, canvas, xLabel, yLabel): # Forgets all readings and draws t
     
     # Resets global variables
     
-    x = np.array([0])
-    y = np.array([0])
-    dy = np.array([0.0])
+    x = np.array([])
+    y = np.array([])
+    dy = np.array([])
     rowIndex = 1
     
     # Creates the placeholder graph
@@ -236,40 +236,25 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
     
     if removing:
         entryFrame.destroy() # Deletes the entry frame as it was removed
-        if len(x) == 1: # If it is the only entry, it resets the graph
-            x = np.array([0])
-            y = np.array([0])
-            dy = np.array([0.0])
-        else: # Otherwise it removes the (x, y) pair that this row added (remembered on the button, so editing the boxes afterwards can't remove the wrong reading)
-            dy = np.delete(dy, find_point(x, y, *entryButton.addedPoint))
-            x, y = remove_point(x, y, *entryButton.addedPoint)
-    elif len(x) == 1 and x[0] == 0: # If there is no other data (x only has one entry, 0) and data is added
-        
-        entryButton.config(bg = lightRed) # Changes the button colour to red, indicating that pressing it will remove the data entry
-        entryButton.addedPoint = (newX, newY) # Remembers which reading this row added, so removal matches the pair exactly
-        x = np.array([newX]) # Replaces the x and y arrays with the new entry, since there is only one entry
-        y = np.array([newY])
-        dy = np.array([newDY])
-        
-        # Creates the next empty row for new entries
-        
-        createEntryRow(entryListFrame, rowIndex, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name)
-        rowIndex += 1 # Places it at the new row, and adds one to the row index
+        dy = np.delete(dy, find_point(x, y, *entryButton.addedPoint)) # Removes the (x, y) pair that this row added (remembered on the button, so editing the boxes afterwards can't remove the wrong reading)
+        x, y = remove_point(x, y, *entryButton.addedPoint)
     elif len(x) == 16: # If there are max entries, do nothing
         messageString.set("Maximum of 16 readings reached")
         return ""
     else:
         
-        # Does the exact same as previous condition, except appends the new values to the x and y arrays
+        # Appends the new reading (the arrays are empty until the first one, so a genuine reading at x = 0 is kept)
         
-        entryButton.config(bg = lightRed)
-        entryButton.addedPoint = (newX, newY)
+        entryButton.config(bg = lightRed) # Changes the button colour to red, indicating that pressing it will remove the data entry
+        entryButton.addedPoint = (newX, newY) # Remembers which reading this row added, so removal matches the pair exactly
         x = np.append(x, [newX])
         y = np.append(y, [newY])
         dy = np.append(dy, [newDY])
         
+        # Creates the next empty row for new entries
+        
         createEntryRow(entryListFrame, rowIndex, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name)
-        rowIndex += 1
+        rowIndex += 1 # Places it at the new row, and adds one to the row index
     
     axes.scatter(x, y, marker = "+", color = "black", s = 100) # Displays the new updated graph
     
@@ -297,7 +282,7 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
         derivedString.set(derived_text(name, gradient, intercept)) # e.g. RP6: E from the intercept, r from the gradient; blank for practicals without a direct quantity
         
     
-    if len(x) == 1 and x[0] == 0: # If there is no entry, set the x and y limits to 10 as placeholder
+    if len(x) == 0: # If there is no entry, set the x and y limits to 10 as placeholder
         axes.set_xlim([0, 10])
         axes.set_ylim([0, 10])
     else: # Otherwise pad the limits by 10%, always including 0 and extending below it when there are negative values (e.g. ln(V) in RP9)
@@ -404,7 +389,7 @@ def importDataCSV(path, entryListFrame, axes, canvas, xLabel, yLabel, mode, grad
                 continue
             rawX, rawY = f"{rawX:.10g}", f"{rawY:.10g}"
         
-        if len(x) >= 16 and not (len(x) == 1 and x[0] == 0): # refreshGraph would refuse a 17th reading, so stop here and count the rest as skipped
+        if len(x) >= 16: # refreshGraph would refuse a 17th reading, so stop here and count the rest as skipped
             skipped += 1
             continue
         
