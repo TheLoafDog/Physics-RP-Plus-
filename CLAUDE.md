@@ -27,7 +27,8 @@ and y-intercept, alongside the original and linearised equations.
   which gives the short red message shown under the entry rows when a reading is rejected.
   Data-transform `mode`: 0 = none, 1 = x → 1/x, 2 = y → ln(y), 3 = x (degrees) → cos(x).
 - `fit.py` — tkinter-free `format_fit(gradient, intercept, xLabel, yLabel)` → the two info-panel strings: 3 s.f. with units
-  taken from the trailing " (unit)" of each axis label (gradient = y unit / x unit; `ln(V)`/`cos(θ)` count as dimensionless).
+  taken from the trailing " (unit)" of each axis label (gradient = y unit / x unit; `ln(V)`/`cos(θ)` count as dimensionless);
+  `r_squared(x, y, g, c)` / `r_squared_text` give R² = 1 − SS_res / SS_tot, shown on a second line under the y-intercept.
 - `uncertainty.py` — tkinter-free: `parse_uncertainty` / `transform_uncertainty` for the optional "± y" box on each entry row (Δ(ln y) = Δy / y in
   mode 2), `worst_fit_lines(x, y, dy)` (steepest/shallowest lines through the ends of the first and last error bars) and `uncertainty_text`
   (the gradient's second info-panel line, "± Δm unit (p %)"). `Main.py` keeps `dy` parallel to `x`/`y`.

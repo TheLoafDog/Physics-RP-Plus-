@@ -21,7 +21,7 @@ requiredPracticalList = ["RP1 Stationary Waves on a String", "RP2 Interference E
 from rp_data import hashGet # Practical data lookup (shared with hashing.py)
 from transforms import transform_point, inverse_transform_point, input_error_message # Linearises a reading according to the practical's mode (and undoes it for imported exports) / explains why it can't
 from points import find_point, remove_point, axis_limits # Finds / removes one (x, y) reading in the plotted arrays / picks axis limits that include negative values
-from fit import format_fit, axis_unit, gradient_unit # Rounds the gradient and intercept to 3 s.f. and adds units worked out from the axis labels
+from fit import format_fit, axis_unit, gradient_unit, r_squared_text # Rounds the gradient and intercept to 3 s.f. and adds units worked out from the axis labels; R² of the fit
 from uncertainty import parse_uncertainty, transform_uncertainty, has_uncertainties, worst_fit_lines, uncertainty_text # Optional "± y" error bars, worst-fit lines and the % uncertainty in the gradient
 from derived import derived_text # Physical quantities read straight off the fit (e.g. RP6: E = intercept, r = -gradient)
 from export import write_csv, save_png, default_filename, read_csv, parse_readings # Save the plotted readings as CSV / the graph as PNG, and read a CSV of readings back in
@@ -277,6 +277,9 @@ def refreshGraph(axes, canvas, newX, newY, entryFrame, entryButton, entryListFra
             axes.plot(lineX, steepGradient * lineX + steepIntercept, linestyle = ":", linewidth = 1, color = darkRed)
             axes.plot(lineX, shallowGradient * lineX + shallowIntercept, linestyle = ":", linewidth = 1, color = darkRed)
             gradientText += "\n" + uncertainty_text(gradient, steepGradient, shallowGradient, gradient_unit(axis_unit(xLabel), axis_unit(yLabel)))
+        r2Text = r_squared_text(x, y, gradient, intercept) # Second line under the intercept: how well the points fit the line ("" if all y are equal)
+        if r2Text:
+            interceptText += "\n" + r2Text
         gradientString.set(gradientText)
         interceptString.set(interceptText)
         derivedString.set(derived_text(name, gradient, intercept)) # e.g. RP6: E from the intercept, r from the gradient; blank for practicals without a direct quantity

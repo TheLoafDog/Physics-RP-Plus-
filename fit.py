@@ -8,6 +8,8 @@ labels: the intercept has the y-axis unit and the gradient has (y unit) / (x uni
 
 import math
 
+import numpy as np
+
 SIG_FIGS = 3  # A-level convention for a value read off a graph
 
 
@@ -72,3 +74,24 @@ def format_fit(gradient, intercept, x_label, y_label, sig_figs = SIG_FIGS):
     gradient_text = with_unit(format_value(gradient, sig_figs), gradient_unit(x_unit, y_unit))
     intercept_text = with_unit(format_value(intercept, sig_figs), y_unit or "")
     return gradient_text, intercept_text
+
+
+def r_squared(x, y, gradient, intercept):
+    """Return the coefficient of determination R² = 1 − SS_res / SS_tot of the line y = gradient·x + intercept for the readings.
+
+    R² is 1 for a perfect straight line and falls towards 0 as the scatter grows.
+    Returns None when SS_tot is 0 (all y values equal), since R² is then undefined.
+    """
+    x = np.asarray(x, dtype = float)
+    y = np.asarray(y, dtype = float)
+    ss_tot = float(np.sum((y - y.mean()) ** 2))
+    if ss_tot == 0:
+        return None
+    ss_res = float(np.sum((y - (gradient * x + intercept)) ** 2))
+    return 1 - ss_res / ss_tot
+
+
+def r_squared_text(x, y, gradient, intercept):
+    """Return "R² = 0.9987" (4 decimal places, so values close to 1 still differ) or "" when R² is undefined."""
+    value = r_squared(x, y, gradient, intercept)
+    return "" if value is None else f"R² = {value:.4f}"
