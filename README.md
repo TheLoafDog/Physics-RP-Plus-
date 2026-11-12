@@ -24,3 +24,6 @@ python3 Main.py
    (for example 1/L for RP1, ln(V) for RP9, cos θ for RP11).
 3. Add more points: from two points onwards, the best-fit line, gradient and y-intercept appear.
 4. To remove a point, press the red button next to it.
+5. Use the Import / Export panel to save the graph as a PNG, save the plotted readings as a CSV,
+   or import readings from a CSV (two columns, x then y, as you would type them; a CSV the app
+   exported is recognised and loaded back as it was).

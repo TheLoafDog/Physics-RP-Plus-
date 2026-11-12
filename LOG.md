@@ -71,3 +71,7 @@
 ## 2026-11-11 — export PNG / CSV
 - New "Export" panel under the data-entry panel with "Save graph as PNG" (matplotlib `savefig`, 150 dpi) and "Save data as CSV" (header = the two axis labels, then the plotted, linearised readings; UTF-8). Both open a save-as dialog with a filesystem-safe default name from the practical's name; cancelling does nothing.
 - Logic is in tkinter-free `export.py` (`tests/test_export.py`). pytest plus a headless xvfb run with the dialog stubbed pass. Merged by Claude (autonomous run).
+
+## 2026-11-12 — import data from CSV
+- New "Import data from CSV" button in the (renamed) Import / Export panel: each row of the file is typed into the next empty entry row and added as if its button were pressed, so transforms, validation and the 16-reading limit all apply; the message label then says how many readings were imported/skipped. A CSV the app exported (header = axis labels) holds linearised values, so `transforms.inverse_transform_point` turns them back into raw readings first.
+- Parsing is in tkinter-free `export.read_csv` / `parse_readings` (tested). pytest plus a headless xvfb run (raw CSV with bad rows, then export → clear → re-import) pass. Merged by Claude (autonomous run).

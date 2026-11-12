@@ -1,8 +1,9 @@
 from tkinter import *
-from tkinter import filedialog # Save-as dialogs for the export buttons
+from tkinter import filedialog # Save-as / open dialogs for the export and import buttons
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigureCanvas
 import matplotlib.pyplot as plt
 import numpy as np
+import csv # Only for csv.Error when an import fails
 
 # Constants for colour
 
@@ -18,11 +19,11 @@ darkBlue = '#005969'
 requiredPracticalList = ["RP1 Stationary Waves on a String", "RP2 Interference Effects", "RP3 Determination of g", "RP4 Determination of Young's Modulus", "RP5 Determination of Resistivity of a Wire", "RP6 Internal resistance and emf", "RP7 Simple Harmonic Motion", "RP8 Boyle's Law", "RP9 Charging and Discharging Capacitors", "RP10 Magnetic Force on a Wire", "RP11 Magnetic Flux Linkage", "RP12 Inverse Square Law"]
 
 from rp_data import hashGet # Practical data lookup (shared with hashing.py)
-from transforms import transform_point, input_error_message # Linearises a reading according to the practical's mode / explains why it can't
+from transforms import transform_point, inverse_transform_point, input_error_message # Linearises a reading according to the practical's mode (and undoes it for imported exports) / explains why it can't
 from points import remove_point, axis_limits # Removes one (x, y) reading from the plotted arrays / picks axis limits that include negative values
 from fit import format_fit # Rounds the gradient and intercept to 3 s.f. and adds units worked out from the axis labels
 from derived import derived_text # Physical quantities read straight off the fit (e.g. RP6: E = intercept, r = -gradient)
-from export import write_csv, save_png, default_filename # Save the plotted readings as CSV / the graph as PNG
+from export import write_csv, save_png, default_filename, read_csv, parse_readings # Save the plotted readings as CSV / the graph as PNG, and read a CSV of readings back in
 
 
 # Global variables
@@ -165,6 +166,8 @@ def createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, 
     # Creates the first data entry row (gridded at row 0)
     
     createEntryRow(dataEntryFrame, 0, axes, canvas, xAxis, yAxis, mode, gradientString, interceptString, messageString, derivedString, name)
+    
+    return dataEntryFrame, messageString # So the import button can add rows and report to the same message label
 
 def clearData(entryListFrame, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name): # Removes every entry row and reading, resets the graph and info panel, and leaves one empty row
     
@@ -315,25 +318,28 @@ def openRP(mainFrame, xAxis, yAxis, xEntryTitle, yEntryTitle, originalEquation, 
     
     derivedLabel.grid(row = 4, column = 0, columnspan = 2)
     
-    createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString, derivedString, name)
+    dataEntryFrame, messageString = createDataEntryFrame(RPFrame, xEntryTitle, yEntryTitle, mode, axes, canvas, xAxis, yAxis, gradientString, interceptString, derivedString, name)
     
-    createExportButtons(RPFrame, figure, xAxis, yAxis, name)
+    createExportButtons(RPFrame, figure, xAxis, yAxis, name, lambda path: importDataCSV(path, dataEntryFrame, axes, canvas, xAxis, yAxis, mode, gradientString, interceptString, messageString, derivedString, name))
     
     RPFrame.pack()
 
-def createExportButtons(RPFrame, figure, xLabel, yLabel, name): # Two buttons under the data-entry panel: save the graph as a PNG, or the plotted readings as a CSV
+def createExportButtons(RPFrame, figure, xLabel, yLabel, name, importCommand): # Three buttons under the data-entry panel: save the graph as a PNG, save the plotted readings as a CSV, or import readings from a CSV (`importCommand(path)` does the work)
     
     exportFrame = Frame(master = RPFrame, width = 190, height = 178, bg = darkGrey, bd = 2, relief = "groove")
     exportFrame.place(relx = 0, rely = 1, x = 10, y = -10, anchor = SW)
     
-    exportTitle = Label(master = exportFrame, width = 12, height = 1, bg = darkGrey, text = "Export", font = ('Arial Bold', 10))
+    exportTitle = Label(master = exportFrame, width = 12, height = 1, bg = darkGrey, text = "Import / Export", font = ('Arial Bold', 10))
     exportTitle.place(relx = 0.5, y = 10, anchor = N)
     
     savePNGButton = Button(master = exportFrame, width = 20, text = "Save graph as PNG", command = lambda: saveGraphPNG(figure, name))
     saveCSVButton = Button(master = exportFrame, width = 20, text = "Save data as CSV", command = lambda: saveDataCSV(xLabel, yLabel, name))
     
-    savePNGButton.place(relx = 0.5, y = 45, anchor = N)
-    saveCSVButton.place(relx = 0.5, y = 85, anchor = N)
+    importCSVButton = Button(master = exportFrame, width = 20, text = "Import data from CSV", command = lambda: openDataCSV(importCommand))
+    
+    savePNGButton.place(relx = 0.5, y = 40, anchor = N)
+    saveCSVButton.place(relx = 0.5, y = 75, anchor = N)
+    importCSVButton.place(relx = 0.5, y = 120, anchor = N)
 
 def saveGraphPNG(figure, name): # Asks where to save, then writes the current graph as a PNG (does nothing if the dialog is cancelled)
     path = filedialog.asksaveasfilename(title = "Save graph as PNG", defaultextension = ".png", initialfile = default_filename(name, ".png"), filetypes = [("PNG image", "*.png")])
@@ -344,6 +350,54 @@ def saveDataCSV(xLabel, yLabel, name): # Asks where to save, then writes the plo
     path = filedialog.asksaveasfilename(title = "Save data as CSV", defaultextension = ".csv", initialfile = default_filename(name, ".csv"), filetypes = [("CSV file", "*.csv")])
     if path:
         write_csv(path, x, y, xLabel, yLabel)
+
+def openDataCSV(importCommand): # Asks which CSV to open, then hands the path to the import (does nothing if the dialog is cancelled)
+    path = filedialog.askopenfilename(title = "Import data from CSV", filetypes = [("CSV file", "*.csv"), ("All files", "*.*")])
+    if path:
+        importCommand(path)
+
+def importDataCSV(path, entryListFrame, axes, canvas, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name): # Reads a CSV of readings and adds each one as if it had been typed into a row and its button pressed
+    
+    try:
+        readings, linearised, skipped = parse_readings(read_csv(path), xLabel, yLabel)
+    except (OSError, UnicodeDecodeError, csv.Error):
+        messageString.set("Could not read that file as a CSV")
+        return ""
+    
+    added = 0
+    for rawX, rawY in readings:
+        if linearised: # The app's own export holds linearised values, so undo the transform to get back the raw reading
+            try:
+                rawX, rawY = inverse_transform_point(rawX, rawY, mode)
+            except (ValueError, ZeroDivisionError):
+                skipped += 1
+                continue
+            rawX, rawY = f"{rawX:.10g}", f"{rawY:.10g}"
+        
+        if len(x) >= 16 and not (len(x) == 1 and x[0] == 0): # refreshGraph would refuse a 17th reading, so stop here and count the rest as skipped
+            skipped += 1
+            continue
+        
+        rowFrame = entryListFrame.winfo_children()[-1] # The last row is always the empty one waiting for input
+        xEntry, yEntry, addButton = rowFrame.winfo_children()
+        xEntry.delete(0, END)
+        yEntry.delete(0, END)
+        xEntry.insert(0, rawX)
+        yEntry.insert(0, rawY)
+        
+        refreshGraph(axes, canvas, rawX, rawY, rowFrame, addButton, entryListFrame, xLabel, yLabel, mode, gradientString, interceptString, messageString, derivedString, name)
+        
+        if addButton.cget("bg") == lightRed: # The button turns red once the reading was accepted
+            added += 1
+        else: # Rejected (e.g. ln of a non-positive value): leave the row empty again for the next reading
+            skipped += 1
+            xEntry.delete(0, END)
+            yEntry.delete(0, END)
+    
+    summary = f"Imported {added} reading{'s' if added != 1 else ''}"
+    if skipped:
+        summary += f", skipped {skipped} (max 16 readings, blank or invalid rows)"
+    messageString.set(summary)
 
 if __name__ == "__main__": # Only open the window when run directly, so the module can be imported (e.g. by tests)
     root = Tk()
