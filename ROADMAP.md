@@ -30,3 +30,11 @@ Items tagged [needs Brandon] are skipped by unattended runs.
 - [x] Uncertainty: optional error bars per point, plus worst-fit (max/min gradient) lines and the percentage uncertainty in the gradient.
 - [x] Fix: a genuine first reading at x = 0 (e.g. t = 0 in RP9) is treated as the (0, 0) placeholder, so the next reading replaces it instead of being added. Track "no readings yet" explicitly instead of testing `len(x) == 1 and x[0] == 0`.
 - [x] Show the coefficient of determination (R²) for the best-fit line.
+
+## Phase 3 — Analysis polish
+- [ ] Export: when any "± y" was entered, write it as a third CSV column (header "± <y label>") so an exported file imports back with its error bars; keep two columns otherwise.
+- [ ] Fit formatting: a gradient/intercept that is tiny compared with the data (e.g. an intercept of 4e-14 Hz from a line through the origin) should display as 0, not in scientific notation — snap values below ~1e-9 × the data's range to 0 in `format_fit`.
+- [ ] Uncertainty in the y-intercept: half the difference between the worst-fit lines' intercepts, shown as "± …" under the intercept like the gradient's line (keep R² visible, e.g. put R² on the derived-quantities line).
+- [ ] Propagate the gradient's percentage uncertainty to derived quantities that are proportional to the gradient or its reciprocal (RP1 v, RP3 g, RP6 r, RP9 RC), e.g. "r = 1.00 Ω ± 33 %".
+- [ ] Keyboard entry: pressing Enter in any box of a row adds that reading and puts the cursor in the next row's x box, so a table of readings can be typed without the mouse.
+- [ ] [needs Brandon] Decide whether uncertainties in x readings should also be supported (horizontal error bars, and worst-fit lines through the corners of the error boxes).
