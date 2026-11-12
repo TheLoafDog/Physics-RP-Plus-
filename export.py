@@ -15,12 +15,12 @@ import numpy as np
 
 
 def has_readings(x, y):
-    """True if `x`, `y` hold entered readings rather than the (0, 0) placeholder the app starts with."""
-    return not (len(x) == 1 and x[0] == 0 and y[0] == 0)
+    """True if `x`, `y` hold any entered readings (the app's arrays are empty until the first one is added)."""
+    return len(x) > 0
 
 
 def csv_rows(x, y, x_label, y_label):
-    """Return the CSV rows: a header of the two axis labels, then one [x, y] row per reading (none for the placeholder)."""
+    """Return the CSV rows: a header of the two axis labels, then one [x, y] row per reading (none when there are no readings)."""
     rows = [[x_label, y_label]]
     if has_readings(x, y):
         rows.extend([float(px), float(py)] for px, py in zip(np.asarray(x), np.asarray(y)))

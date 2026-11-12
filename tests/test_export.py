@@ -9,8 +9,9 @@ import matplotlib.pyplot as plt
 from export import csv_rows, default_filename, has_readings, save_png, write_csv
 
 
-def test_placeholder_has_no_readings():
-    assert not has_readings(np.array([0]), np.array([0]))
+def test_empty_arrays_have_no_readings():
+    assert not has_readings(np.array([]), np.array([]))
+    assert has_readings(np.array([0.0]), np.array([0.0]))  # a genuine reading at (0, 0) counts
     assert has_readings(np.array([0.0]), np.array([2.0]))
     assert has_readings(np.array([1.0, 2.0]), np.array([3.0, 4.0]))
 
@@ -20,8 +21,8 @@ def test_csv_rows_header_then_readings():
     assert rows == [["Current (A)", "Voltage (V)"], [0.1, 1.4], [0.2, 1.3]]
 
 
-def test_csv_rows_placeholder_is_header_only():
-    assert csv_rows(np.array([0]), np.array([0]), "x", "y") == [["x", "y"]]
+def test_csv_rows_without_readings_is_header_only():
+    assert csv_rows(np.array([]), np.array([]), "x", "y") == [["x", "y"]]
 
 
 def test_write_csv_round_trips_with_unicode_labels(tmp_path):
